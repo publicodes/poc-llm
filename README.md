@@ -21,6 +21,21 @@ Tout les calculs sont effectués par le moteur [publicodes](https://publi.codes)
 - modèle [publicodes](https://publi.codes) du calcul de préavis de retraite
 - [streamlit](https://streamlit.io) pour l'UI de démo
 
+## Dev:
+
+Les règles publicodes sont définies dans [./publicodes-api/rules.json](./publicodes-api/rules.json)
+
+```sh
+# démarrer l'API publicodes
+cd publicodes-api
+yarn && yarn start
+
+# démarrer l'app streamlit
+OPENAI_TOKEN=xxx streamlit run src/run.py
+```
+
+(Le proxy NGINX proposé sert à juste à améliorer les perfs)
+
 ## Todo:
 
 - detection/validation de CC

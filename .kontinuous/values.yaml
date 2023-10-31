@@ -14,7 +14,9 @@ app:
     - name: STREAMLIT_BROWSER_GATHER_USAGE_STATS
       value: "False"
     - name: OPENAI_URL
-      value: "proxy.${{ $.Values.global.host }}"
+      value: "http://proxy.${{ $.Values.global.namespace }}.svc"
+    - name: PUBLICODES_URL
+      value: "http://publicodes-api.${{ $.Values.global.namespace }}.svc"
   startupProbe:
     failureThreshold: 60
     httpGet:
@@ -27,8 +29,10 @@ app:
 
 proxy:
   ~chart: app
-  host: "proxy.${{ $.Values.global.host }}"
   image: nginx:alpine3.18
+  containerPort: 8080
+  ingress:
+    enabled: false
   envFrom:
     - secretRef:
         name: openai
@@ -44,11 +48,29 @@ proxy:
           - key: default.conf
             path: default.conf
 
+publicodes-api:
+  ~chart: app
+  containerPort: 3002
+  probesPath: /rules
+  ~needs: [build-publicodes-api]
+  ingress:
+    enabled: false
+
 jobs:
   runs:
     build-app:
       use: build
       with:
         imagePackage: app
+        dockerfile: Dockerfile.streamlit
+        buildArgs:
+          COMMIT_SHA: "{{ $.Values.global.sha }}"
+
+    build-publicodes-api:
+      use: build
+      with:
+        imagePackage: publicodes-api
+        context: ./publicodes-api
+        dockerfile: Dockerfile.publicodes-api
         buildArgs:
           COMMIT_SHA: "{{ $.Values.global.sha }}"

@@ -16,4 +16,4 @@ COPY . .
 
 USER 1000
 
-ENTRYPOINT ["yarn", "start"]
+ENTRYPOINT ["node", "index.js"]
