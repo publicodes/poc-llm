@@ -1,0 +1,54 @@
+app:
+  ~chart: app
+  containerPort: 8501
+  probesPath: /_stcore/health
+  ~needs: [build-app]
+  envFrom:
+    - secretRef:
+        name: openai
+    - secretRef:
+        name: notion
+  env:
+    - name: ANONYMIZED_TELEMETRY
+      value: "False"
+    - name: STREAMLIT_BROWSER_GATHER_USAGE_STATS
+      value: "False"
+    - name: OPENAI_URL
+      value: "proxy.${{ $.Values.global.host }}"
+  startupProbe:
+    failureThreshold: 60
+    httpGet:
+      path: /_stcore/health
+      port: http
+      scheme: HTTP
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+
+proxy:
+  ~chart: app
+  host: "proxy.${{ $.Values.global.host }}"
+  image: nginx:alpine3.18
+  envFrom:
+    - secretRef:
+        name: openai
+  volumeMounts:
+    - mountPath: /etc/nginx/conf.d/default.conf
+      name: nginx-config
+      subPath: default.conf
+  volumes:
+    - name: nginx-config
+      configMap:
+        name: nginx-config
+        items:
+          - key: default.conf
+            path: default.conf
+
+jobs:
+  runs:
+    build-app:
+      use: build
+      with:
+        imagePackage: app
+        buildArgs:
+          COMMIT_SHA: "{{ $.Values.global.sha }}"
