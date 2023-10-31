@@ -1,4 +1,6 @@
 import os
+import sys
+import logging
 import openai
 
 from tool import agent
@@ -7,6 +9,14 @@ if os.getenv("OPENAI_URL"):
     openai.api_base = os.getenv("OPENAI_URL")
     openai.verify_ssl_certs = False
 
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+
+
+logger = logging.getLogger()
+
+# handler = logging.StreamHandler(stream=sys.stdout)
+# handler.setFormatter(LlamaIndexFormatter())
+# logger.addHandler(handler)
 
 cases = [
     {
