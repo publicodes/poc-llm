@@ -18,5 +18,4 @@ jobs:
         run: |
           pip install poetry
           poetry install
-          poetry shell
-          python src/tools.test.py
+          poetry run python src/tools.test.py
