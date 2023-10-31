@@ -75,6 +75,6 @@ jobs:
       with:
         imagePackage: publicodes-api
         context: ./publicodes-api
-        dockerfile: Dockerfile
+        dockerfile: ./publicodes-api/Dockerfile
         buildArgs:
           COMMIT_SHA: "{{ $.Values.global.sha }}"
