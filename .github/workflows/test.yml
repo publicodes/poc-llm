@@ -5,6 +5,10 @@ on:
   push:
     branches: ["*"]
 
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.ref }}
+
 jobs:
   test:
     name: Test publicodes
@@ -19,6 +23,8 @@ jobs:
           cd publicodes-api
           yarn && yarn start &
           cd ..
+          docker run -d -p 8083:8080 -v $PWD/nginx.conf:/etc/nginx/conf.d/default.conf nginx:alpine3.18 
+          export OPENAI_URL=http://127.0.0.1:8083
           pip install poetry
           poetry install
           poetry run python src/tools.test.py

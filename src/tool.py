@@ -172,7 +172,7 @@ class PublicodeAgent:
                             str,  # todo: use typing unions from strings
                             Field(
                                 description=description
-                                + " Un choix parmis: "
+                                + " Un choix parmi: "
                                 + " ou ".join(map(lambda a: f"'{a}'", values)),
                                 # enum force casting answers
                                 json_schema_extra={
