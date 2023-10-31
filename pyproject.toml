@@ -5,7 +5,7 @@ description = ""
 authors = ["Julien Bouquillon <julien.bouquillon@sg.social.gouv.fr>"]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 llama-index = "^0.8.40"
 llama-cpp-python = "^0.2.11"
 transformers = "^4.34.0"
