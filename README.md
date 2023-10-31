@@ -34,7 +34,13 @@ yarn && yarn start
 OPENAI_TOKEN=xxx streamlit run src/run.py
 ```
 
-(Le proxy NGINX proposé sert à juste à améliorer les perfs)
+Le proxy NGINX proposé sert à juste à améliorer les perfs :
+
+```sh
+docker run -p 8083:8080 -v $PWD/nginx.conf:/etc/nginx/conf.d/default.conf nginx:alpine3.18
+```
+
+La variable d'environnement `OPENAI_URL` permet de forcer le passage par votre proxy, ex: `OPENAI_URL=http://127.0.0.1:8083`.
 
 ## Todo:
 

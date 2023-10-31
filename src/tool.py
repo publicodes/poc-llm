@@ -193,6 +193,7 @@ if __name__ == "__main__":
 
 # message = input("Human: ").encode("utf-8")  # "Calcules moi mon préavis de retraite"
 
+agent.chat("poeut")
 # while message != "exit":
 #     response = agent.chat(message)
 #     print(f"Assistant: {response}\n")
