@@ -16,6 +16,6 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          pip install poetry==1.2.0
+          pip install poetry
           poetry install
           python src/tools.test.py
