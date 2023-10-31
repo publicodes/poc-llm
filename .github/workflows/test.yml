@@ -16,6 +16,9 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
+          cd publicodes-api
+          yarn && yarn start &
+          cd ..
           pip install poetry
           poetry install
           poetry run python src/tools.test.py
