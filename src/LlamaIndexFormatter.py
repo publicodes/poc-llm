@@ -78,5 +78,6 @@ class LlamaIndexFormatter(logging.Formatter):
                         ).items():
                             print("\t\t", f"{arg}: {value}")
         else:
-            print(record)
+            # print(record)
+            pass
         return ""

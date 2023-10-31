@@ -3,7 +3,7 @@ import sys
 import logging
 import openai
 
-from tool import agent
+from tool import PublicodeAgent
 from LlamaIndexFormatter import LlamaIndexFormatter
 
 if os.getenv("OPENAI_URL"):
@@ -14,9 +14,9 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 logger = logging.getLogger()
 
-# handler = logging.StreamHandler(stream=sys.stdout)
-# handler.setFormatter(LlamaIndexFormatter())
-# logger.addHandler(handler)
+handler = logging.StreamHandler(stream=sys.stdout)
+handler.setFormatter(LlamaIndexFormatter())
+logger.addHandler(handler)
 
 cases = [
     {
@@ -54,8 +54,9 @@ cases = [
     },
 ]
 
+
 for case in cases:
-    agent.reset()
+    agent = PublicodeAgent()
     inputs = case.get("inputs", [])
     response = None
     for input_data in inputs:

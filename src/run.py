@@ -1,21 +1,22 @@
 import sys
 import logging
 import streamlit as st
+import random
 
 from LlamaIndexFormatter import LlamaIndexFormatter
-from tool import agent
+from tool import PublicodeAgent
 
 #
 # this is "just" the streamlit UI wrapper around the llama_index agent
 #
 
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 logger = logging.getLogger()
 
-# handler = logging.StreamHandler(stream=sys.stdout)
-# handler.setFormatter(LlamaIndexFormatter())
-# logger.addHandler(handler)
+handler = logging.StreamHandler(stream=sys.stdout)
+handler.setFormatter(LlamaIndexFormatter())
+logger.addHandler(handler)
 
 st.set_page_config(
     page_title="LLM + publicodes = ❤️",
@@ -36,17 +37,17 @@ Si on vous demande la convention collective, répondre IDCC1979 ou IDCC1043 par 
 
 Exemple : Quel est mon préavis de retraite ?
 
-RDV [sur GitHub](https://github.com/SocialGouv/publicodes-llm) pour en discuter""".format(),
+Les détails [sur GitHub](https://github.com/SocialGouv/publicodes-llm)""".format(),
     icon="💡",
 )
 
 
 if "messages" not in st.session_state.keys():  # Initialize the chat message history
     st.session_state.messages = [
-        # {
-        #     "role": "user",
-        #     "content": "Peux tu me calculer mon préavis de retraite ?",
-        # }
+        {
+            "role": "assistant",
+            "content": "Bienvenue !",
+        }
     ]
 
 
@@ -72,23 +73,40 @@ for message in st.session_state.messages:  # Display the prior chat messages
 #         }
 #     )
 
+
+# if not st.session_state.messages:
+
+#     st.session_state.messages.append(
+#         {"role": "assistant", "content": "Comment puis-je vous aider ?"}
+#     )
+
+if "agent" not in st.session_state:
+    # set the initial default value of the slider widget
+    agent = PublicodeAgent()
+    st.session_state["agent"] = agent
+
+waiters = [
+    "Je refléchis...",
+    "Hummmm laissez moi chercher...",
+    "Je cherche des réponses...",
+]
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     with st.chat_message("assistant"):
-        with st.spinner("Je refléchis..."):
+        with st.spinner(random.choice(waiters)):
             # print("prompt", prompt)
             message_placeholder = st.empty()
-            query = prompt or not st.session_state.messages
-            if prompt:
-                streaming_response = agent.stream_chat(prompt)
+            if prompt and st.session_state.agent:
+                print("hello", prompt)
+                streaming_response = st.session_state.agent.chat(prompt)
 
                 # streaming_response.print_response_stream()
-
-                full_response = ""
-                for text in streaming_response.response_gen:
-                    full_response += text
-                    message_placeholder.markdown(full_response)
+                full_response = streaming_response
+                message_placeholder.markdown(streaming_response)
+                # for text in streaming_response.response_gen:
+                #     full_response += text
+                #     message_placeholder.markdown(full_response)
 
                 if full_response:
                     st.session_state.messages.append(
-                        {"role": "assistant", "content": full_response}
+                        {"role": "assistant", "content": full_response.response}
                     )

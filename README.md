@@ -45,7 +45,6 @@ La variable d'environnement `OPENAI_URL` permet de forcer le passage par votre p
 ## Todo:
 
 - detection/validation de CC
-- recap parameters before results
 - improve parameters matching/validation
 - gestion initialisation des parametres
 - lister les choix possibles quand il y des enums

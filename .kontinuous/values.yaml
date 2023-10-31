@@ -13,6 +13,10 @@ app:
       value: "False"
     - name: STREAMLIT_BROWSER_GATHER_USAGE_STATS
       value: "False"
+    - name: STREAMLIT_CLIENT_TOOLBAR_MODE
+      value: "minimal"
+    - name: STREAMLIT_THEME_BASE
+      value: "light"
     - name: OPENAI_URL
       value: "http://proxy.{{ .Values.global.namespace }}.svc"
     - name: PUBLICODES_API_URL
