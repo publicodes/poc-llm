@@ -4,13 +4,13 @@ import logging
 import openai
 
 from tool import agent
+from LlamaIndexFormatter import LlamaIndexFormatter
 
 if os.getenv("OPENAI_URL"):
     openai.api_base = os.getenv("OPENAI_URL")
     openai.verify_ssl_certs = False
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-
 
 logger = logging.getLogger()
 

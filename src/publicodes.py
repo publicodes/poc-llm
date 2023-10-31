@@ -28,6 +28,9 @@ def map_value(value: Any):
 
 
 def get_next_question_rule(data: dict):
+    if not isinstance(data, dict):
+        raise Exception("Invalid publicode API response")
+
     missingVariables: dict = data.get("evaluate", [{}])[0].get("missingVariables", {})
     if missingVariables:
         key = sorted(missingVariables.items(), key=lambda x: (x[1]), reverse=True)[0][0]

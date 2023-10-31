@@ -1,18 +1,5 @@
 # encoding: utf-8
 
-
-# import streamlit as st
-
-#
-# Todo:
-#  - timeout/proxy
-#  - detection/validation de CC
-#  - recap parameters before results
-#  - improve parameters matching
-#  - gestion init des parametres
-#  - lister les choix possibles quand il y des enums
-#
-
 import logging
 import os
 import sys
@@ -23,7 +10,6 @@ from llama_index.tools.types import ToolMetadata
 
 from typing import TypedDict
 
-# from pydantic import create_model, Field
 from pydantic.v1 import create_model, Field
 
 from publicodes import get_rule, map_value, evaluate
@@ -45,12 +31,29 @@ logger = logging.getLogger()
 ParametresCalcul = TypedDict("ParametresCalcul", {})
 
 
+PROMPT_CONSEILLER_PREAVIS = """
+Tu es un assistant en phase de test en charge d'estimer la durée de préavis à respecter en cas de départ à la retraite ou de mise à la retraite de ton interlocuteur.
+
+Tu ne peux répondre qu'à des questions au sujet du préavis de départ à la retraite et tu ne dois PAS utiliser des connaissances générales ou sur le code du travail.
+
+Tu ne dois pas estimer ou calculer toi-même le préavis de retraite mais utiliser la fonction get_next_question
+
+La fonction get_next_question te renvoie les questions à poser à l'utilisateur. Tu ne dois pas poser d'autres questions que celles fournies par la fonction get_next_question.
+
+Tu dois utiliser la définition de la fonction get_next_question pour choisir le nom des paramètres de calcul à lui envoyer.
+
+Si la fonction get_next_question renvoie un nombre, commence par afficher les paramètres utilisés dans le calcul, puis :
+    - affiche le résultat en nombre de jours arrondi au jour inférieur, avec une estimation en nombre de mois
+    - indiques le site du code du travail numérique: https://code.travail.gouv.fr/outils/preavis-retraite
+
+"""
+
+
 def get_next_question(**parametres_calcul: ParametresCalcul) -> str | None:
     """
-    Pour calculer le préavis de retraite. renvoie une question manquante ou un résultat en jours.
+    Pour calculer le préavis de retraite. renvoie une question à poser à l'utilisateur ou un résultat en jours.
     """
 
-    global agent
     logger.debug("get_next_question", parametres_calcul or {})
 
     situation_publicodes = {
@@ -67,7 +70,7 @@ def get_next_question(**parametres_calcul: ParametresCalcul) -> str | None:
     #
     # here we "infer" parameters types from publicodes definitions at runtime
     # and update the LLM function call signature
-    # this is necessary to enforce return types and parameter names
+    # this looks necessary to enforce return types and parameter names
     #
     if next_question and next_key:
         parameters = situation_publicodes.copy()
@@ -130,30 +133,6 @@ def get_next_question(**parametres_calcul: ParametresCalcul) -> str | None:
     return None
 
 
-PROMPT_CONSEILLER_PREAVIS = """
-Tu es un assistant en phase de test en charge d'estimer la durée de préavis à respecter en cas de départ à la retraite ou de mise à la retraite de ton interlocuteur.
-
-Tu ne peux répondre qu'à des questions au sujet du préavis de départ à la retraite et tu ne dois PAS utiliser des connaissances générales.
-
-Tu ne dois jamais calculer toi-même la préavis de retraite mais utiliser la fonction get_next_question.
-Tu ne dois jamais choisir les parametres de calcul toi-même mais utiliser la fonction get_next_question.
-
-Tu dois TOUJOURS utiliser la fonction get_next_question pour obtenir le message à envoyer à l'utilisateur.
-Tu dois TOUJOURS respecter le schema de la fonction get_next_question et adapter les réponses de l'utilisateur en fonction.
-
-Si la fonction get_next_question ne renvoie rien ou "None", dit au revoir à l'utilisateur avec des smileys sans jamais lui indiquer son préavis de retraite et indique-lui le site du code du travail numérique: https://code.travail.gouv.fr/outils/preavis-retraite
-
-Si la fonction get_next_question renvoie une chaine de caracteres : 
-    - renvoies toujours une question à l'utilisateur à partir ce texte
-    - enregistres la réponse de l'utilisateur dans les parametres pour les prochains appels à la fonction en respectant précisément la définition des parametres la fonction.
-
-Si la fonction get_next_question renvoie un nombre, commence par afficher les paramètres utilisés dans le calcul, puis :
-    - affiche le résultat en nombre de jours arrondi au jour inférieur, avec une estimation en nombre de mois
-    - indiques le site du code du travail numérique: https://code.travail.gouv.fr/outils/preavis-retraite
-
-"""
-
-
 def update_tool(fn, fields):
     """create a tool with custom fields schema"""
     global get_next_question_tool
@@ -175,7 +154,6 @@ get_next_question_tool = update_tool(get_next_question, dict())
 
 # from llama_index.llms import OpenAI
 
-
 agent = OpenAIAgent.from_tools(
     [get_next_question_tool],
     verbose=True,
@@ -194,7 +172,6 @@ if __name__ == "__main__":
 
 # message = input("Human: ").encode("utf-8")  # "Calcules moi mon préavis de retraite"
 
-agent.chat("poeut")
 # while message != "exit":
 #     response = agent.chat(message)
 #     print(f"Assistant: {response}\n")
