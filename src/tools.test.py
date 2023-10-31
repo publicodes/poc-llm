@@ -1,12 +1,12 @@
+import os
+import re
 import openai
 
-openai.api_base = "http://127.0.0.1:8084"
-openai.verify_ssl_certs = False
-
-# openai.proxy = {"http": "http://127.0.0.1:8084", "https": "http://127.0.0.1:8084"}
-
-import re
 from tool import agent
+
+if os.getenv("OPENAI_URL"):
+    openai.api_base = os.getenv("OPENAI_URL")
+    openai.verify_ssl_certs = False
 
 
 cases = [
@@ -44,9 +44,6 @@ cases = [
         "expectations": ["60 jours"],
     },
 ]
-
-
-# IDCC1043
 
 for case in cases:
     agent.reset()

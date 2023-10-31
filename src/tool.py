@@ -15,6 +15,7 @@
 
 import json
 import logging
+import os
 import sys
 import requests
 import openai
@@ -28,82 +29,23 @@ from typing import TypedDict
 # from pydantic import create_model, Field
 from pydantic.v1 import create_model, Field
 
-openai.api_base = "http://127.0.0.1:8084"
-openai.verify_ssl_certs = False
+from publicodes import get_rule, map_value, evaluate
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+if os.getenv("OPENAI_URL"):
+    openai.api_base = os.getenv("OPENAI_URL")
+    openai.verify_ssl_certs = False
 
-handler = logging.StreamHandler(stream=sys.stdout)
-handler.setFormatter(LlamaIndexFormatter())
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+
 
 logger = logging.getLogger()
 
-logger.addHandler(handler)
-
-
-def get_publicodes_rule(name):
-    r = requests.get(
-        f"http://127.0.0.1:3002/rules/{name}",
-        headers={"content-type": "application/json"},
-    )
-    return r.json()
+# handler = logging.StreamHandler(stream=sys.stdout)
+# handler.setFormatter(LlamaIndexFormatter())
+# logger.addHandler(handler)
 
 
 ParametresCalcul = TypedDict("ParametresCalcul", {})
-
-
-def publicodes_map_value(value):
-    if value is True or value == "oui":
-        return "oui"
-    elif value is False or value == "non":
-        return "non"
-    elif value == "":
-        return None
-    elif str(value).isdigit():
-        return value
-    return f"'{value}'"
-
-
-def get_next_question_rule(data):
-    missingVariables: dict = data.get("evaluate", [{}])[0].get("missingVariables", {})
-    if missingVariables:
-        key = sorted(missingVariables.items(), key=lambda x: (x[1]), reverse=True)[0][0]
-        rule = get_publicodes_rule(key)
-        return rule
-    return None
-
-
-def publicodes_evaluate(expression: str, situation: dict):
-    req = requests.post(
-        "http://127.0.0.1:3002/evaluate",
-        data=json.dumps(
-            {
-                "situation": situation,
-                "expressions": [expression],
-            }
-        ),
-        headers={"content-type": "application/json"},
-    )
-    data = req.json()
-
-    # print("===PUBLICODES/")
-    # print("situation", situation)
-    # print("result", data)
-    # print("===/PUBLICODES")
-    next_question_rule = get_next_question_rule(data)
-    evaluations = data.get("evaluate", [{}])
-    result = evaluations[0].get("nodeValue") if len(evaluations) else None
-
-    next_question = next_key = None
-
-    if next_question_rule:
-        next_question = next_question_rule.get("rawNode", {}).get(
-            "question", next_question_rule.get("title")
-        )
-        next_key = next_question_rule.get("rawNode", {}).get(
-            "nom", next_question_rule.get("title")
-        )
-    return next_question, next_key, result
 
 
 def get_next_question(**parametres_calcul: ParametresCalcul) -> str | None:
@@ -115,13 +57,13 @@ def get_next_question(**parametres_calcul: ParametresCalcul) -> str | None:
     logger.debug("get_next_question", parametres_calcul or {})
 
     situation_publicodes = {
-        key: publicodes_map_value(value) for (key, value) in parametres_calcul.items()
+        key: map_value(value) for (key, value) in parametres_calcul.items()
     }
 
     logger.debug("\x1b[0m ⚙️ publicodes \x1b[0m")
     logger.debug(situation_publicodes)
 
-    next_question, next_key, result = publicodes_evaluate(
+    next_question, next_key, result = evaluate(
         "contrat salarié . préavis de retraite en jours", situation_publicodes
     )
 
@@ -136,7 +78,7 @@ def get_next_question(**parametres_calcul: ParametresCalcul) -> str | None:
         # key type ?
         typed_parameters = {}
         for key in parameters.keys():
-            rule = get_publicodes_rule(key)
+            rule = get_rule(key)
             description = rule.get("rawNode").get("question")
             node_type = rule.get("rawNode").get("cdtn", {}).get("type")
             if node_type == "oui-non":

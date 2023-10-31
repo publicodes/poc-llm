@@ -36,7 +36,6 @@ class LlamaIndexFormatter(logging.Formatter):
         super(LlamaIndexFormatter, self).__init__()
 
     def format(self, record):
-        input_data = {}
         if record.name == "openai":
             # print("------")
             # print(record.msg)

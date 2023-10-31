@@ -4,6 +4,9 @@
   "main": "index.js",
   "type": "module",
   "license": "MIT",
+  "scripts": {
+    "start": "node index"
+  },
   "dependencies": {
     "@koa/cors": "^4.0.0",
     "@koa/router": "^11.0.2",
