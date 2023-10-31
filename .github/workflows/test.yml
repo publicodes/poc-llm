@@ -1,0 +1,20 @@
+name: Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["*"]
+
+jobs:
+  test:
+    name: Test publicodes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - shell: bash
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          poetry install
+          python src/tools.test.py
