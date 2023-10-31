@@ -13,16 +13,13 @@
 #  - lister les choix possibles quand il y des enums
 #
 
-import json
 import logging
 import os
 import sys
-import requests
 import openai
 from llama_index.agent import OpenAIAgent
 from llama_index.tools.function_tool import FunctionTool
 from llama_index.tools.types import ToolMetadata
-from LlamaIndexFormatter import LlamaIndexFormatter
 
 from typing import TypedDict
 
