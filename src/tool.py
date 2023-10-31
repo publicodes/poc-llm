@@ -2,7 +2,6 @@
 
 import logging
 import os
-import sys
 import openai
 from llama_index.agent import OpenAIAgent
 from llama_index.tools.function_tool import FunctionTool
@@ -47,7 +46,6 @@ Si la fonction get_next_question renvoie un nombre, affiches la liste des param�
     - affiche le résultat en nombre de jours arrondi au jour inférieur, avec une estimation en nombre de mois
     - indiques le site du code du travail numérique: https://code.travail.gouv.fr/outils/preavis-retraite
     - remercie chaleureusement l'utilisateur
-
 """
 
 
@@ -63,7 +61,6 @@ def update_tool(fn, fields: dict):
     tool_metadata = ToolMetadata(
         name=name, description=description, fn_schema=fn_schema
     )
-
     return FunctionTool(fn=fn, metadata=tool_metadata)
 
 

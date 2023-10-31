@@ -90,6 +90,7 @@ waiters = [
     "Hummmm laissez moi chercher...",
     "Je cherche des réponses...",
 ]
+
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     with st.chat_message("assistant"):
         with st.spinner(random.choice(waiters)):
