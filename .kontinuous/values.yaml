@@ -6,8 +6,6 @@ app:
   envFrom:
     - secretRef:
         name: openai
-    - secretRef:
-        name: notion
   env:
     - name: ANONYMIZED_TELEMETRY
       value: "False"
@@ -35,6 +33,7 @@ proxy:
   ~chart: app
   image: nginx:alpine3.18
   containerPort: 8080
+  probesPath: /rules
   ingress:
     enabled: false
   envFrom:
@@ -55,6 +54,7 @@ proxy:
 publicodes-api:
   ~chart: app
   containerPort: 3002
+  imagePackage: publicodes-api
   probesPath: /rules
   ~needs: [build-publicodes-api]
   ingress:
