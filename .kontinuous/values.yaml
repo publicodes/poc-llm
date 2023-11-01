@@ -33,7 +33,7 @@ proxy:
   ~chart: app
   image: nginx:alpine3.18
   containerPort: 8080
-  probesPath: /rules
+  probesPath: /healthz
   ingress:
     enabled: false
   envFrom:
