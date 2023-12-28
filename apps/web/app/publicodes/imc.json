@@ -1,0 +1,67 @@
+{
+  "meta": {
+    "titre": "Calcul de l'indice de masse corporelle",
+    "statut": "Expérimental",
+    "références": {
+      "Wikipedia": "https://fr.wikipedia.org/wiki/Indice_de_masse_corporelle"
+    },
+    "description": "L’indice de masse corporelle ou IMC (en anglais, body mass index ou BMI) est une grandeur qui permet d'estimer la corpulence d’une personne.\n"
+  },
+  "taille": {
+    "question": "Quelle est votre taille (en cm) ?",
+    "unité": "cm",
+    "cdtn": {
+      "type": "entier"
+    }
+  },
+  "poids": {
+    "question": "Quel est votre poids (en kg) ?",
+    "unité": "kg",
+    "cdtn": {
+      "type": "entier"
+    }
+  },
+  "taille mètres": {
+    "valeur": "taille",
+    "unité": "m"
+  },
+  "imc": {
+    "valeur": "poids / ((taille mètres) * (taille mètres))",
+    "unité": "kg/m2"
+  },
+  "résultat": {
+    "applicable si": "imc",
+    "texte": "**Votre IMC est de {{ imc }}**\n\nInterprétation: {{ résultat . interpretation }}\n"
+  },
+  "résultat . interpretation": {
+    "variations": [
+      {
+        "si": "imc >= 40",
+        "alors": "'obésité morbide ou massive'"
+      },
+      {
+        "si": "imc >= 35",
+        "alors": "'obésité sévère'"
+      },
+      {
+        "si": "imc >= 30",
+        "alors": "'obésité modérée'"
+      },
+      {
+        "si": "imc >= 25",
+        "alors": "'surpoids'"
+      },
+      {
+        "si": "imc >= 18.5",
+        "alors": "'poids normal'"
+      },
+      {
+        "si": "imc >= 16.5",
+        "alors": "'maigreur'"
+      },
+      {
+        "sinon": "'dénutrition'"
+      }
+    ]
+  }
+}
