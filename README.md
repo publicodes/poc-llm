@@ -8,4 +8,4 @@ Pour lancer la démo :
 yarn && yarn dev
 ```
 
-Puis lancer votre navigateur en ajoutant une clé OPENAI dans l'url : `http://127.0.0.1:3000#sk-57Yet244UPCcj3MW53SBDgQCV9drbhPKQ``
+Puis lancer votre navigateur en ajoutant une clé OPENAI dans l'url : `http://127.0.0.1:3000#sk-57Yet244UPCcj3MW53SBDgQCV9drbhPKQ`
