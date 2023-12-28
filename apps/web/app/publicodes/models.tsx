@@ -3,6 +3,8 @@ import { formatValue } from "publicodes";
 
 import rulesPreavisRetraite from "./preavis-retraite.json";
 import rulesImc from "./imc.json";
+import rulesCovid from "./covid.json";
+import rulesOvh from "./ovh.json";
 
 type PublicodeRules = Record<string, any>;
 
@@ -45,6 +47,37 @@ Vous pouvez vous rendre sur [le site du code du travail numérique](https://code
         .
       </>
     ),
+  } as PublicodeModelDefinition,
+
+  // ovh: {
+  //   rules: rulesOvh,
+  //   key: "markdown",
+  //   title: "Calcul OVH",
+  //   warning: null,
+  //   getConclusion: ({ situation, resolved }) => {
+  //     console.log(resolved.nodeValue);
+
+  //     return resolved.nodeValue;
+  //   },
+  // } as PublicodeModelDefinition,
+  covid: {
+    rules: rulesCovid,
+    key: "résultat",
+    title: "Algorithme d'orientation COVID",
+    warning: (
+      <>
+        <br /> Implémentation expérimentale de{" "}
+        <a href="https://delegation-numerique-en-sante.github.io/covid19-algorithme-orientation/">
+          l'Algorithme d'orientation COVID-19
+        </a>
+        .
+      </>
+    ),
+    getConclusion: ({ situation, resolved }) => {
+      console.log(resolved.nodeValue);
+
+      return resolved.nodeValue;
+    },
   } as PublicodeModelDefinition,
   imc: {
     rules: rulesImc,

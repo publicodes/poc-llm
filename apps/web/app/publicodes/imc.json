@@ -31,7 +31,7 @@
   },
   "résultat": {
     "applicable si": "imc",
-    "texte": "Votre IMC est de {{ imc }}\nInterprétation: {{ résultat . interpretation }}\n"
+    "texte": "**Votre IMC est de {{ imc }}**\n\nInterprétation: {{ résultat . interpretation }}\n"
   },
   "résultat . interpretation": {
     "variations": [

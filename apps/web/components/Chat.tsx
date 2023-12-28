@@ -1,4 +1,5 @@
 import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { KeyboardEventHandler, useRef } from "react";
 
 import { fr } from "@codegouvfr/react-dsfr";
@@ -14,20 +15,26 @@ import { usePublicodesResolver } from "../lib/usePublicodesResolver";
 export type ChatMessage = { role: string; content: string };
 
 const Messages = ({ messages }: { messages: ChatMessage[] }) => {
+  const roleStyle = {
+    paddingBottom: 5,
+    borderBottom: "1px solid silver",
+    marginBottom: 5,
+  };
   return (
     <>
       {messages.map((m, i) => (
         <div key={m.role + m.content + i}>
           {m.role === "user" ? (
-            <div>
+            <div style={roleStyle}>
               <i className={fr.cx("ri-user-2-fill")} /> Vous:
             </div>
           ) : (
-            <div>
+            <div style={roleStyle}>
               <i className={fr.cx("ri-robot-2-fill")} /> Assistant:
             </div>
           )}
           <Markdown
+            remarkPlugins={[remarkGfm]}
             components={{
               p: (props) => {
                 const { node, ...rest } = props;

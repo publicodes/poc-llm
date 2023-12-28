@@ -12,12 +12,15 @@ export const askUser = async (
   return rl.question("\n\n" + question + "\nUser: ");
 };
 
-export const toPublicodeValue = (str: unknown) => {
+export const toPublicodeValue = (str: unknown, rules) => {
   if (str === true || str === "oui") {
     return "oui";
   }
   if (str === false || str === "non") {
     return "non";
+  }
+  if (Object.keys(rules).includes(str)) {
+    return str;
   }
   //@ts-ignore
   if (!isNaN(str)) {
@@ -29,7 +32,7 @@ export const toPublicodeValue = (str: unknown) => {
 
 export const log = (title: string, data: unknown) => {
   // if (!process.env.DEBUG) {
-  console.log(`\n\n----\n${title}\n----\n${JSON.stringify(data)}\n\n`);
+  console.log(`\n\n----\n${title}\n----\n${JSON.stringify(data, null, 2)}\n\n`);
   //}
 };
 

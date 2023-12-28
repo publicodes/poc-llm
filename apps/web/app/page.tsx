@@ -14,6 +14,7 @@ const Links = () => {
         return (
           <Card
             key={key}
+            style={{ margin: 10 }}
             background
             border
             enlargeLink
@@ -22,14 +23,6 @@ const Links = () => {
               href: `/publicodes/${key}${document.location.hash}`,
             }}
             size="large"
-            /*start={<ul className="fr-badges-group">
-                <li>
-                  <Badge>LABEL BADGE</Badge>
-                </li>
-                <li>
-                  <Badge severity="new">LABEL BADGE</Badge>
-                </li>
-              </ul>}*/
             title={model.title}
             titleAs="h3"
           />
@@ -56,7 +49,7 @@ export default function Page({ params }: { params: {} }) {
               Ajouter une clé OpenAI à la fin de l'URL pour accéder au service
               <br />
               <br />
-              Exemple : "#sk-flekjnfelrjgregjber"
+              Exemple : "https://xxx.xxx.xxx#sk-flekjnfelrjgregjber"
             </div>
           }
         />

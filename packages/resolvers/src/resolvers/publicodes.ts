@@ -19,7 +19,7 @@ type CdtnRuleNode = RawRule & {
 };
 
 const getRuleSchema = (rule: CdtnRuleNode): ZodSchema => {
-  const nodeType = rule.cdtn?.type;
+  const nodeType = rule.cdtn?.type || rule.meta?.type;
   const describe = `${rule.titre || rule.question}${
     rule.unité ? ` (en ${rule.unité})` : ``
   }`;
@@ -31,24 +31,34 @@ const getRuleSchema = (rule: CdtnRuleNode): ZodSchema => {
     fieldSchema = z.number().int().describe(describe);
   } else if (nodeType === "liste") {
     // todo: use some convention instead of "cdtn"
-    if (rule.cdtn && Object.values(rule.cdtn.valeurs || []).length) {
-      const values: string[] = Object.entries(rule.cdtn.valeurs || [])
+    const root = (rule.cdtn && rule.cdtn.valeurs) || rule.meta?.valeurs;
+    if (root && Object.values(root || []).length) {
+      const values: { value: string; label: string }[] = Object.entries(
+        root || []
+      )
         .map(([k, v]) => {
           console.log("k,x", k, v.toString().replace(/'/g, ""));
-          return (
-            v.toString().replace(/'/g, "") !== k.toString()
-              ? `${k} (=${v})`
+          return {
+            value: (v.toString().replace(/'/g, "") !== k.toString()
+              ? `${v}`
               : `${k}`
-          )
-            .replace(/^'/, "")
-            .replace(/'$/, "");
+            )
+              .replace(/^'/, "")
+              .replace(/'$/, ""),
+            label: k,
+          };
         })
         .filter(Boolean);
       if (values.length > 0) {
         fieldSchema = z
           //@ts-ignore
-          .enum(values)
-          .describe(describe + ` choisir parmi ${values.join(", ")}`);
+          .enum(values.map((v) => v.value))
+          .describe(
+            describe +
+              ` choisir parmi: ${values
+                .map((v) => `${v.label}: ${v.value}`)
+                .join(", ")}`
+          );
       }
     }
   }
@@ -140,7 +150,10 @@ export const resolvePublicodes = async ({
               commentCallback,
             });
             log(`publicodes resolver for ${missingKey}`, missingResolved);
-            situation[missingKey] = toPublicodeValue(missingResolved.answer);
+            situation[missingKey] = toPublicodeValue(
+              missingResolved.answer,
+              rules
+            );
           }
         } else {
           const schema = getRuleSchema(missingRule);
@@ -154,7 +167,10 @@ export const resolvePublicodes = async ({
           log(`publicodes resolveLLM for ${missingKey}`, {
             missingQuestion,
           });
-          situation[missingKey] = toPublicodeValue(missingResolved.answer);
+          situation[missingKey] = toPublicodeValue(
+            missingResolved.answer,
+            rules
+          );
         }
         log("publicodes situation", situation);
       }

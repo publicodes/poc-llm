@@ -1,0 +1,240 @@
+{
+  "meta": {
+    "titre": "Orientation COVID-19",
+    "statut": "Expérimental",
+    "références": {
+      "Délégation du numérique en santé": "https://delegation-numerique-en-sante.github.io/covid19-algorithme-orientation/",
+      "Github Etalab": "https://github.com/Delegation-numerique-en-sante/covid19-algorithme-orientation/blob/master/pseudo-code.org"
+    },
+    "description": "Implémentation de l'algorithme d'orientation pour les personnes se demandant si elles présentent des symptômes du Covid-19.\n\nCet algorithme est défini par un comité scientifique composé de médecins, appelé CovidTélé, co-piloté par l'AP-HP et l'Institut Pasteur.\n"
+  },
+  "symptômes": "oui",
+  "symptômes . température": {
+    "question": "Quelle a été votre température la plus élevée ces dernières 48 heures ?"
+  },
+  "symptômes . toux": {
+    "question": "Avez-vous une toux ou votre toux habituelle s’est-elle modifiée ces derniers jours ?"
+  },
+  "symptômes . anosmie": {
+    "question": "Avez-vous noté une perte ou une forte diminution de votre goût ou de votre odorat ces derniers jours ?"
+  },
+  "symptômes . douleurs": {
+    "question": "Avez-vous un mal de gorge ou des douleurs musculaires ou des courbatures inhabituelles ou des maux de tête inhabituels ces derniers jours ?"
+  },
+  "symptômes . douleurs . notification": {
+    "applicable si": "douleurs = oui",
+    "notification": "Si vous avez des maux de tête qui ne disparaissent pas après la prise de médicaments anti-douleurs (dont paracétamol) et que vous décririez comme intolérables : Appelez le 15\n"
+  },
+  "symptômes . diarrhée": {
+    "question": "Avez-vous de la diarrhée ces dernières 24 heures (au moins 3 selles molles) ?"
+  },
+  "symptômes . fatigue": {
+    "question": "Avez-vous une fatigue inhabituelle ces derniers jours ?"
+  },
+  "symptômes . fatigue importante": {
+    "applicable si": "fatigue = oui",
+    "question": "Cette fatigue vous oblige-t-elle à vous reposer plus de la moitié de la journée ?"
+  },
+  "symptômes . alimenter ou boire impossible": {
+    "question": "Êtes-vous dans l'impossibilité de vous alimenter ou de boire DEPUIS 24 HEURES OU PLUS ?"
+  },
+  "symptômes . manque de souffle": {
+    "question": "Dans les dernières 24 heures, avez-vous noté un manque de souffle INHABITUEL lorsque vous parlez ou faites un petit effort ?"
+  },
+  "symptômes . facteurs gravité mineur": {
+    "somme": ["symptômes . fatigue importante = oui", "symptômes . fièvreux"]
+  },
+  "symptômes . facteurs gravité majeur": {
+    "somme": [
+      "symptômes . manque de souffle = oui",
+      "symptômes . alimenter ou boire impossible = oui"
+    ]
+  },
+  "symptômes . fièvreux": {
+    "une de ces conditions": [
+      "symptômes . température < 35.5",
+      "symptômes . température >= 39"
+    ]
+  },
+  "patient": "oui",
+  "patient . âge": {
+    "question": "Quel est votre âge ?",
+    "unité": "an"
+  },
+  "patient . taille": {
+    "question": "Quelle est votre taille (en cm) ?",
+    "unité": "cm"
+  },
+  "patient . poids": {
+    "question": "Quel est votre poids (en kg) ?",
+    "unité": "kg"
+  },
+  "patient . imc": {
+    "valeur": "(poids / (taille * taille * 100))"
+  },
+  "patient . antécédents de maladie cardiovasculaire": {
+    "question": "Avez-vous des antécédents de maladie cardiovasculaire : hypertension artérielle compliquée (avec complications cardiaques, rénales), accident vasculaire cérébral, maladie coronaire (infarctus), chirurgie cardiaque, insuffisance cardiaque avec essoufflement au moindre effort ?\n"
+  },
+  "patient . diabète mal équilibré ou avec des complications": {
+    "question": "Avez-vous un diabète mal équilibré ou avec des complications (yeux, reins) ?"
+  },
+  "patient . cancert évolutif": {
+    "question": "Avez-vous un cancer évolutif sous traitement (hors hormonothérapie) ?"
+  },
+  "patient . maladie respiratoire chronique": {
+    "question": "Avez-vous une maladie respiratoire chronique (bronchopneumopathie obstructive, asthme sévère, fibrose pulmonaire, syndrome d’apnées du sommeil, mucoviscidose) ou êtes-vous suivi par un pneumologue ?\n"
+  },
+  "patient . insuffisance rénale": {
+    "question": "Avez-vous une insuffisance rénale chronique avec besoin de faire de la dialyse ?"
+  },
+  "patient . cirrhose": {
+    "question": "Avez-vous une cirrhose ?"
+  },
+  "patient . enceinte": {
+    "question": "Êtes-vous enceinte au 3ème trimestre de votre grossesse ?"
+  },
+  "patient . drépanocytose": {
+    "question": "Avez-vous une drépanocytose homozygote (forme majeure) ou avez-vous bénéficié d’une splénectomie (ablation de la rate) à cause de la drépanocytose ?\n"
+  },
+  "patient . immunodépression": {
+    "question": "Avez-vous une immunodépression, par exemple : médicamenteuse (chimiothérapie anti cancéreuse, traitement immunosuppresseur, biothérapie et/ou corticothérapie à dose immunosuppressive depuis plus de 15 jours) ; infection à VIH non contrôlée ou avec des CD4 <200/mm3 ; consécutive à une greffe d'organe solide ou de cellules souches hématopoïétiques ; liée à une hémopathie maligne en cours de traitement ?\n"
+  },
+  "patient . facteur pronostique positif": {
+    "remplace": "facteur pronostique",
+    "applicable si": {
+      "une de ces conditions": [
+        "âge >= 65",
+        "imc >= 30",
+        "antécédents de maladie cardiovasculaire = oui",
+        "diabète mal équilibré ou avec des complications = oui",
+        "cancert évolutif = oui",
+        "maladie respiratoire chronique = oui",
+        "insuffisance rénale = oui",
+        "cirrhose = oui",
+        "enceinte = oui",
+        "drépanocytose = oui",
+        "immunodépression = oui"
+      ]
+    }
+  },
+  "patient . facteur pronostique": "non",
+  "messages": "oui",
+  "messages . FIN1": {
+    "applicable si": "patient . âge < 15",
+    "remplace": "résultat",
+    "texte": "Cette application n’est pas faite pour les personnes de moins de 15 ans.\nPrenez contact avec votre médecin généraliste au moindre doute.\n\nEn cas d’urgence, appelez le 15.\n"
+  },
+  "messages . FIN3": {
+    "remplace": "résultat",
+    "applicable si": {
+      "une de ces conditions": [
+        {
+          "toutes ces conditions": [
+            "symptômes . fièvre ou symptômes",
+            "patient . facteur pronostique = non",
+            "symptômes . facteurs gravité mineur > 0"
+          ]
+        },
+        {
+          "toutes ces conditions": [
+            "symptômes . fièvre ou symptômes",
+            "patient . facteur pronostique = non",
+            "symptômes . facteurs gravité mineur = 0",
+            "patient . âge >= 50"
+          ]
+        },
+        {
+          "toutes ces conditions": [
+            "symptômes . fièvre ou symptômes",
+            "patient . facteur pronostique = oui"
+          ]
+        }
+      ]
+    },
+    "texte": "Votre situation peut relever d’un Covid-19.\n\nDemandez une téléconsultation ou un médecin généraliste ou une visite à domicile.\n\nAppelez le 15 si une gêne respiratoire ou des difficultés importantes\npour vous alimenter ou boire apparaissent pendant plus de 24 heures.\n\nEn attendant et pour casser les chaînes de transmission, nous vous\nconseillons de vous isoler et de respecter les gestes barrières pour\nprotéger vos proches.\n"
+  },
+  "messages . FIN4": {
+    "remplace": "résultat",
+    "applicable si": {
+      "toutes ces conditions": [
+        "symptômes . fièvre ou symptômes",
+        "patient . facteur pronostique = oui",
+        "symptômes . facteurs gravité mineur > 1"
+      ]
+    },
+    "texte": "Votre situation peut relever d’un Covid-19.\n\nDemandez une téléconsultation ou un médecin généraliste ou une visite\nà domicile. Si vous n'arrivez pas à obtenir de consultation, appelez\nle 15.\n\nEn attendant et pour casser les chaînes de transmission, nous vous\nconseillons de vous isoler et de respecter les gestes barrières pour\nprotéger vos proches.\n"
+  },
+  "messages . FIN5": {
+    "applicable si": "symptômes . facteurs gravité majeur > 0",
+    "remplace": "résultat",
+    "texte": "Appelez le 15.\n"
+  },
+  "messages . FIN6": {
+    "applicable si": {
+      "une de ces conditions": [
+        {
+          "toutes ces conditions": [
+            "patient . facteur pronostique = non",
+            "symptômes . fièvre et toux = oui"
+          ]
+        },
+        {
+          "toutes ces conditions": [
+            "symptômes . fièvre ou symptômes",
+            "patient . facteur pronostique = non",
+            "symptômes . facteurs gravité mineur = 0",
+            "patient . âge < 50"
+          ]
+        }
+      ]
+    },
+    "remplace": "résultat",
+    "texte": "Votre situation peut relever d’un Covid-19.\n\nDemandez une téléconsultation ou un médecin généraliste ou une visite\nà domicile (SOS médecins, etc.)\n\nEn attendant et pour casser les chaînes de transmission, nous vous\nconseillons de vous isoler et de respecter les gestes barrières pour\nprotéger vos proches.\n"
+  },
+  "messages . FIN7": {
+    "applicable si": {
+      "toutes ces conditions": [
+        "symptômes . fièvre et toux = oui",
+        "patient . facteur pronostique = oui"
+      ]
+    },
+    "texte": "Votre situation peut relever d’un Covid-19.\n\nDemandez une téléconsultation ou un médecin généraliste. Au moindre\ndoute, appelez le 15.\n\nEn attendant et pour casser les chaînes de transmission, nous vous\nconseillons de vous isoler et de respecter les gestes barrières pour\nprotéger vos proches.\n"
+  },
+  "messages . FIN8": {
+    "texte": "Votre situation ne relève probablement pas du Covid-19.\n\nN’hésitez pas à contacter votre médecin en cas de doute.\n\nVous pouvez refaire le test en cas de nouveau symptôme pour réévaluer\nla situation.\n\nPour toute information concernant le Covid-19, composer le 0 800 130 000.\n"
+  },
+  "symptômes . fièvre ou symptômes": {
+    "valeur": "oui",
+    "applicable si": {
+      "une de ces conditions": [
+        "fièvreux",
+        {
+          "une de ces conditions": [
+            "diarrhée = oui",
+            {
+              "toutes ces conditions": ["toux = oui", "douleurs = oui"]
+            },
+            {
+              "toutes ces conditions": ["toux = oui", "anosmie = oui"]
+            },
+            {
+              "toutes ces conditions": ["douleurs = oui", "anosmie = oui"]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "symptômes . fièvre et toux": {
+    "valeur": "oui",
+    "applicable si": {
+      "toutes ces conditions": [
+        "symptômes . toux = oui",
+        "symptômes . fièvreux = oui"
+      ]
+    }
+  },
+  "résultat": {
+    "valeur": "messages . FIN8"
+  }
+}

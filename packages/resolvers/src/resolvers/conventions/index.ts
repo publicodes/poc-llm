@@ -110,7 +110,13 @@ export const resolveConventionCollective: SimpleRuleResolver = async ({
           messages.push({ role: "user", content });
           if (content.match(/^(IDCC)?\s*\d\d\d+/)) {
             const idcc = content.replace(/IDCC/, "").trim();
-            result = idcc as string;
+            const kaliName = getKaliNameFromIdcc(idcc);
+            if (kaliName) {
+              result = idcc as string;
+              commentCallback(
+                `Convention collective sélectionnée : IDCC ${result} : ${kaliName}`
+              );
+            }
           }
         }
       }
