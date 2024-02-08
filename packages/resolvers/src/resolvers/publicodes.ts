@@ -32,6 +32,7 @@ const getRuleSchema = (rule: CdtnRuleNode): ZodSchema => {
   } else if (nodeType === "liste") {
     // todo: use some convention instead of "cdtn"
     const root = (rule.cdtn && rule.cdtn.valeurs) || rule.meta?.valeurs;
+    console.log("root", root);
     if (root && Object.values(root || []).length) {
       const values: { value: string; label: string }[] = Object.entries(
         root || []
@@ -61,13 +62,48 @@ const getRuleSchema = (rule: CdtnRuleNode): ZodSchema => {
           );
       }
     }
+  } else if (rule.suggestions && Object.values(rule.suggestions).length) {
+    const values = Object.values(rule.suggestions).map(
+      (s) => s && ("" + s).replace(/'/g, "")
+    );
+    fieldSchema = z
+      //@ts-ignore
+      .enum(values)
+      .describe(
+        describe +
+          ` choisir parmi: ${values
+            .map(
+              (v) =>
+                `${("" + v).replace(/'/g, "")}: ${
+                  rule.suggestions[v] &&
+                  ("" + rule.suggestions[v]).replace(/'/g, "")
+                }`
+            )
+            .join(", ")}`
+      );
+  } else if (rule.aide && Object.values(rule.aide).length > 0) {
+    fieldSchema = z
+      //@ts-ignore
+      .enum(Object.values(rule.aide))
+      .describe(
+        describe +
+          ` choisir parmi: ${Object.entries(rule.aide)
+            .map(([k, v]) => `${k} (${v})`)
+            .join(", ")}`
+      );
+  } else if (rule["par défaut"] === "oui" || rule["par défaut"] === "non") {
+    fieldSchema = z.enum(["oui", "non"]).describe(describe);
   }
+  console.log(rule, fieldSchema);
   return fieldSchema;
 };
 
 const isStr = (obj: unknown): obj is string => {
   return Object.prototype.toString.call(obj) === "[object String]";
 };
+
+// infer zod schema from publicode rule
+const ruleToPublicodesSchema = () => {};
 
 const getMissingVariable = (
   rules: Record<string, string | CdtnRuleNode>,
@@ -138,23 +174,22 @@ export const resolvePublicodes = async ({
     if (missingKey) {
       if (missingRule && !isStr(missingRule) && missingQuestion) {
         log("publicodes missingKey", missingKey);
-        if (resolvers[missingKey]) {
-          // call dummy resolver
-          const resolver = resolvers[missingKey];
-          if (resolver) {
-            // eslint-disable-next-line no-await-in-loop
-            const missingResolved = await runResolver({
-              resolver,
-              text: missingQuestion,
-              questionCallback,
-              commentCallback,
-            });
-            log(`publicodes resolver for ${missingKey}`, missingResolved);
-            situation[missingKey] = toPublicodeValue(
-              missingResolved.answer,
-              rules
-            );
-          }
+        // call dummy resolver
+        const resolver = resolvers[missingKey];
+        console.log("resolver", resolver);
+        if (resolver) {
+          // eslint-disable-next-line no-await-in-loop
+          const missingResolved = await runResolver({
+            resolver,
+            text: missingQuestion,
+            questionCallback,
+            commentCallback,
+          });
+          log(`publicodes resolver for ${missingKey}`, missingResolved);
+          situation[missingKey] = toPublicodeValue(
+            missingResolved.answer,
+            rules
+          );
         } else {
           const schema = getRuleSchema(missingRule);
           // eslint-disable-next-line no-await-in-loop
@@ -166,6 +201,7 @@ export const resolvePublicodes = async ({
           });
           log(`publicodes resolveLLM for ${missingKey}`, {
             missingQuestion,
+            schema,
           });
           situation[missingKey] = toPublicodeValue(
             missingResolved.answer,

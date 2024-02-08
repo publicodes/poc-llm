@@ -24,6 +24,8 @@ export const usePublicodesResolver = (model: PublicodeModelDefinition) => {
     setResolverInstance(initResolver());
   }, []);
 
+  console.log("usePublicodesResolver", messages);
+
   const initResolver = useCallback(() => {
     // return;
     if (initialized.current) return resolverInstance;

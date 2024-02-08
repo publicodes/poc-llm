@@ -29,7 +29,9 @@ const getKaliNameFromIdcc = (idcc: string) => {
 const client = new OpenAI({
   timeout: 15000,
   maxRetries: 10,
-  apiKey: process.env.OPENAI_API_KEY || document.location.hash.slice(1),
+  apiKey:
+    process.env.OPENAI_API_KEY ||
+    (typeof document !== "undefined" && document.location.hash.slice(1)),
   dangerouslyAllowBrowser: true,
 });
 

@@ -3,6 +3,7 @@
 import { OpenAI } from "openai";
 
 import { printNode, zodToTs } from "zod-to-ts";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import { ZodSchema, z } from "zod";
 
 import { log } from "../utils";
@@ -21,7 +22,7 @@ const getInstructions = ({ schema }: { schema: ZodSchema }) =>
 Tu es un assistant qui va aider l'utilisateur à répondre à une question.
 Poses directement la question fournie initialement.
 Utilises un language direct et vouvoies l'utilisateur.
-Indique les choix possibles quand ils sont fournis dans le schema TypeScript.
+Indique les choix possibles quand ils sont fournis dans le json-schema SCHEMA.
 Tu ne dois jamais répondre à la place de l'utilisateur.
 Ne fait appel à du cache ou à des informations générales.
 
@@ -30,7 +31,7 @@ Dès que l'utilisateur t'as donné la réponse, tu dois la renvoyer respectant l
 <EXPLICATIONS>[explications et détails de calcul]</EXPLICATIONS>
 <REPONSE>[reponse respectant le schema TypeScript ci-dessous]</REPONSE>
 
-SCHEMA: ${printNode(zodToTs(schema).node)}
+SCHEMA: ${JSON.stringify(zodToJsonSchema(schema, "schema").definitions.schema)}
 
 `.trim();
 
@@ -139,20 +140,30 @@ export const resolveLLM = async ({
             responseContent.indexOf("<REPONSE>") + 9,
             responseContent.indexOf("</REPONSE>")
           );
-          const response = JSON.parse(data);
-          if (typeof response.result !== "undefined") {
-            const validResponse = resultSchema.parse({
-              result: response.result,
-            }) as typeof schema;
+          try {
+            const response = JSON.parse(data);
+            if (typeof response.result !== "undefined") {
+              const validResponse = resultSchema.parse({
+                result: response.result,
+              }) as typeof schema;
 
+              result = {
+                details,
+                answer: validResponse.result,
+              };
+            } else {
+              //todo
+
+              console.log("todo llm#152");
+            }
+          } catch {
+            const validResponse = resultSchema.parse({
+              result: data,
+            }) as typeof schema;
             result = {
               details,
               answer: validResponse.result,
             };
-          } else {
-            //todo
-
-            console.log("todo llm#152");
           }
         } catch (e) {
           console.log(e);

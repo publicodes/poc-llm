@@ -32,7 +32,9 @@ export const toPublicodeValue = (str: unknown, rules) => {
 
 export const log = (title: string, data: unknown) => {
   // if (!process.env.DEBUG) {
-  console.log(`\n\n----\n${title}\n----\n${JSON.stringify(data, null, 2)}\n\n`);
+  console.log(`\n\n----\n${title}\n----\n`);
+  console.log(JSON.stringify(data, null, 2));
+  console.log(`\n\n`);
   //}
 };
 

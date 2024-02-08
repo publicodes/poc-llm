@@ -5,6 +5,7 @@ import rulesPreavisRetraite from "./preavis-retraite.json";
 import rulesImc from "./imc.json";
 import rulesCovid from "./covid.json";
 import rulesOvh from "./ovh.json";
+import rulesReno from "./reno.json";
 
 type PublicodeRules = Record<string, any>;
 
@@ -83,6 +84,17 @@ Vous pouvez vous rendre sur [le site du code du travail numérique](https://code
     rules: rulesImc,
     key: "résultat",
     title: "Calcul de l'IMC",
+    warning: null,
+    getConclusion: ({ situation, resolved }) => {
+      console.log(resolved.nodeValue);
+
+      return resolved.nodeValue;
+    },
+  } as PublicodeModelDefinition,
+  reno: {
+    rules: rulesReno,
+    key: "aides",
+    title: "Calcul des aides à la rénovation",
     warning: null,
     getConclusion: ({ situation, resolved }) => {
       console.log(resolved.nodeValue);
