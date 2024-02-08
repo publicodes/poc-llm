@@ -1,0 +1,776 @@
+{
+  "simulation": {
+    "description": "Sont ici définies les options de simulation. Ce ne sont en général pas des questions à poser à l'utilisateur, mais des choix d'interface à faire."
+  },
+  "simulation . mode": {
+    "titre": "Mode de simulation",
+    "description": "En fonction de votre interface, vous pouvez présenter les valeurs maximum de simulation, ou les valeurs moyennes. \n\nVous pouvez aussi afficher les deux. \n\nDans notre cas ici, la valeur minimum est la plupart du temps zéro, nous ne l'avons donc pas considérée.\n",
+    "par défaut": "'max'",
+    "possibilités": ["max", "moyen"]
+  },
+  "aides": {
+    "formule": { "somme": ["MPR . accompagnée", "MPR . non accompagnée"] }
+  },
+  "revenu": {
+    "titre": "Revenu fiscal de référence",
+    "question": "Quel est votre revenu fiscal de référence ?",
+    "par défaut": {
+      "variations": [
+        { "si": "simulation . mode = 'moyen'", "alors": "23000 €" },
+        { "sinon": "0 €" }
+      ]
+    },
+    "suggestions": { "bas": "20000 €", "moyen": "50000 €", "élevé": "80000 €" }
+  },
+  "propriétaire": null,
+  "propriétaire . condition": {
+    "question": "Êtes-vous propriétaire ?",
+    "par défaut": "oui",
+    "description": "Pour bénéficier des aides à la rénovation, il faut être dans l'une de ces situations. \n\nSituations simples : \n  - propriétaire occupant (vous vivez dans votre logement)\n  - propriétaire bailleur (un locataire vit dans votre logement)\n\nAutres situations éligibles, vous êtes : \n  - usufruitier\n  - titulaires (occupants et bailleurs) d’un droit réel conférant l’usage du bien \n  - preneurs (occupants et bailleurs) d’un bail emphytéotique ou d’un bail à construction \n  - propriétaires en indivision si l’ensemble des propriétaires indivisaires ont signé l’[attestation](https://www.anah.gouv.fr/document/attestation-sur-l-honneur-du-representant-unique-de-l-indivision) sur l’honneur qui désigne le demandeur pour porter les travaux au nom de l’indivision.\n\nSituations non éligibles, vous êtes : \n  - les nus-propriétaires\n  - les personnes morales (par exemple les sociétés civiles immobilières)\n"
+  },
+  "propriétaire . astuce": {
+    "type": "notification",
+    "sévérité": "information",
+    "formule": "condition = non",
+    "description": "Si vous êtes locataires, vous n'êtes pas éligibles aux aides à la rénovation. \n\n**Cependant**, n'hésitez pas à faire cette simulation en tant que propriétaire. Cela peut constituer une base de discussion factuelle intéressante : votre propriétaire n'est peut-être pas au courant des nouvelles aides 2024.\n"
+  },
+  "résidence principale": {
+    "question": "Votre logement est-il et restera-t-il une résidence principale ?",
+    "par défaut": "oui",
+    "description": "Que ce soit votre résidence principale (vous êtes propriétaire occupant), ou celle de votre locataire (propriétaire bailleur), elle doit **être occupée au moins 8 mois par an**, maintenant et dans les 3 prochaines années au moins suivant la rénovation.\n\nLes résidences secondaires sont donc exclues.\n\nSi vous comptez louer votre logement rénové, vous devrez le faire dans un délai d'un an et pendant **au moins 6 ans**.\n"
+  },
+  "année de construction": {
+    "question": "De quelle année date la construction de votre logement ?",
+    "par défaut": 1950,
+    "suggestions": {
+      "très ancien": 1900,
+      "trente glorieuses": 1950,
+      "choc pétrolier": 1975,
+      "récent": 2000,
+      "neuf": 2020
+    }
+  },
+  "âge": {
+    "titre": "Âge du logement",
+    "formule": "2024 - année de construction"
+  },
+  "personnes": {
+    "titre": "La composition de votre foyer",
+    "question": "Quelle est la composition de votre foyer ?",
+    "par défaut": {
+      "variations": [
+        { "si": "simulation . mode = 'moyen'", "alors": "1 personne" },
+        { "sinon": "5 personne" }
+      ]
+    },
+    "suggestions": {
+      "seul": "1 personne",
+      "seul + enfant": "2 personne",
+      "couple": "2 personne",
+      "couple + enfant": "3 personne",
+      "couple + 2 enfants": "4 personne"
+    }
+  },
+  "personnes plus": {
+    "titre": "Personnes de plus qu'un foyer de 5",
+    "formule": "personnes - 5"
+  },
+  "revenu . classe": {
+    "formule": {
+      "variations": [
+        { "si": "revenu >= max", "alors": "\"supérieure\"" },
+        { "si": "région . IdF", "alors": "barème IdF" },
+        { "sinon": "barème" }
+      ]
+    }
+  },
+  "région": {
+    "titre": "Votre région",
+    "question": "Dans quelle région se situe votre logement ?",
+    "par défaut": "'Bretagne'",
+    "suggestions": {
+      "Bretagne": "'Bretagne'",
+      "Pays de la Loire": "'Pays de la Loire'",
+      "IdF": "'Île-de-France'"
+    }
+  },
+  "id ban": { "titre": "Identifiant base nationale des adresses (BAN)" },
+  "région . IdF": "région = 'Île-de-France'",
+  "DPE": { "titre": "Diagnostic de Performance Énergétique." },
+  "DPE . actuel . passoire": {
+    "type": "notification",
+    "sévérité": "information",
+    "formule": "actuel > 5",
+    "description": "Votre logement est considéré comme une **passoire énergétique**. pour le chauffer, il faut dépenser beaucoup d'énergie, ou bien émettre beaucoup de gaz à effet de serre.\n\nÀ partir du 1er juillet 2024, vous ne serez pas éligible à l'aide dite *par gestes*, qui ne suffira pas : il faut faire une rénovation globale. Elle est réservée aux logements plus énergivores ou qui émettent plus de gaz à effet de serre.\n\nLa bonne nouvelle, c'est que si vous décidez de le faire avec au moins 2 sauts de DPE, le *parcours accompagné* vous proposera une aide conséquente.\n"
+  },
+  "DPE . actuel . efficace": {
+    "type": "notification",
+    "sévérité": "information",
+    "formule": "actuel < 3",
+    "description": "Votre logement est classé A ou B, il est donc relativement efficace.\n\nVous n'êtes donc pas éligible à l'aide à la rénovation globale, car elle nécessite 2 sauts de DPE.\n"
+  },
+  "DPE . actuel": {
+    "titre": "Votre DPE actuel",
+    "question": "Quel est le DPE actuel de votre logement ?",
+    "description": "Le DPE, c'est le Diagnostic de Performance Énergétique de votre logement. \n\nIl mesure d'un côté l'énergie nécessaire pour y maintenir une température standard, et de l'autre l'empreinte climat associée. \n\nLe DPE est exprimé comme une note de A (très bon) à G (passoire thermique). \n\nSi vous ne connaissez pas le DPE actuel de votre logement, vous pourrez en trouver une estimation en 2 clics avec le service [Go Renov](https://particulier.gorenove.fr).\n",
+    "par défaut": {
+      "variations": [
+        { "si": "simulation . mode = 'moyen'", "alors": 4 },
+        { "sinon": 5 }
+      ]
+    },
+    "aide": { "G": 7, "F": 6, "E": 5, "D": 4, "C": 3, "B": 2 }
+  },
+  "DPE . visé": {
+    "titre": "Votre futur DPE visé",
+    "question": "Quel DPE visé après rénovation ?",
+    "par défaut": {
+      "variations": [
+        { "si": "simulation . mode = 'moyen'", "alors": 2 },
+        { "sinon": 1 }
+      ]
+    },
+    "aide": { "E": 5, "D": 4, "C": 3, "B": 2, "A": 1 }
+  },
+  "DPE . visé . insuffisant": {
+    "type": "notification",
+    "sévérité": "information",
+    "formule": { "toutes ces conditions": ["sauts < 2", "sauts >= 0"] },
+    "description": "Pour être éligible à l'aide à la rénovation globale dite *parcours accompagné*, votre projet doit viser un minimum de 2 sauts de DPE.\n\nSi vous n'êtes pas prêt à vous lancer dans cette rénovation ambitieuse, vous pouvez continuer la simulation pour estimer votre aide dite *par gestes*.\n"
+  },
+  "sauts": {
+    "titre": "Sauts de classe DPE",
+    "formule": "DPE . actuel - DPE . visé",
+    "question": "Combien de sauts de classe DPE sont visés ?",
+    "suggestions": { "de G à D": 3, "de F à B": 4, "de C à A": 2 },
+    "description": "Par exemple, passer d'un DPE G à un DPE D vaut 3 sauts.\n"
+  },
+  "DPE . visé . erreur": {
+    "type": "notification",
+    "sévérité": "invalide",
+    "formule": "sauts < 0",
+    "description": "À moins que vous n'ayez prévu de détruire un mur, votre DPE visé n'est pas sensé être moins inférieur à votre DPE actuel 😉\n"
+  },
+  "travaux . notification": {
+    "type": "notification",
+    "sévérité": "information",
+    "formule": "travaux < 5000",
+    "description": "Pour atteindre 2 sauts de DPE, il est en général nécessaire de prévoir une enveloppe de travaux de plusieurs milliers d'€.\n"
+  },
+  "travaux": {
+    "titre": "Votre enveloppe des travaux",
+    "question": "Quel est l'enveloppe totale hors taxe (HT) de vos travaux ?",
+    "par défaut": {
+      "variations": [
+        { "si": "simulation . mode = 'moyen'", "alors": "20000 €" },
+        { "sinon": "70000 €" }
+      ]
+    },
+    "suggestions": {
+      "basse": "10000 €",
+      "moyenne": "40000 €",
+      "haute": "70000 €"
+    },
+    "description": "Notez que le taux de TVA des travaux de rénovation énergétique varie en fonction des gestes, de 5,5 % à 10 %.\n"
+  },
+  "travaux . plafonnés": {
+    "plafond": {
+      "variations": [
+        { "si": "sauts = 2", "alors": "40000 €" },
+        { "si": "sauts = 3", "alors": "55000 €" },
+        { "si": "sauts >= 4", "alors": "70000 €" }
+      ]
+    },
+    "valeur": "travaux"
+  },
+  "condition d'ancienneté": {
+    "question": "Votre logement a-t-il plus de 15 ans (construit avant 2009) ?",
+    "par défaut": "oui"
+  },
+  "conditions communes": {
+    "titre": "Conditions d'élligibilité de base",
+    "toutes ces conditions": [
+      "propriétaire . condition",
+      "condition d'ancienneté",
+      "résidence principale"
+    ]
+  },
+  "MPR": { "titre": "Ma prime rénov'" },
+  "MPR . non accompagnée . conditions": {
+    "une de ces conditions": [
+      "revenu . classe = \"supérieure\"",
+      "DPE . actuel >= 6"
+    ]
+  },
+  "MPR . non accompagnée": {
+    "description": "Alternative au parcours accompagné, si votre logement n'est pas une passoire thermique, vous pouvez être aidé pour rénover plus progressivement votre logement. \n\nSoit en optant pour un chauffage décarboné seul, soit en le complétant avec des gestes d'isolation.\n\n[En savoir plus](https://www.anah.gouv.fr/sites/default/files/2023-12/202401_guide-aides-financieres-2024.pdf#page=15).\n",
+    "applicable si": "conditions communes",
+    "non applicable si": "conditions",
+    "valeur": "gestes . montant",
+    "titre": "Parcours par geste"
+  },
+  "explication des 2 aides": {
+    "description": "Nous avons estimé votre éligibilité générale aux 2 aides Ma Prime Rénov'. \n\nLa suite du test vous permettra de répondre aux conditions plus fines d'éligibilité, et choisir les travaux de rénovation envisagés.\n",
+    "type": "question rhétorique",
+    "par défaut": "oui"
+  },
+  "gestes": null,
+  "MPR . accompagnée": {
+    "titre": "Parcours accompagné",
+    "description": "L'aide principale en 2024 pour rénover son logement, c'est celle qui offre le plus d'aide et elle est accessible quel que soit le revenu du foyer. \n\nVous serez [accompagné](https://france-renov.gouv.fr/preparer-projet/faire-accompagner/mon-accompagnateur-renov), pour rénover de façon ambitieuse votre logement et gagner au minimum deux classes DPE.\n\n[En savoir plus](https://france-renov.gouv.fr/aides/maprimerenov-parcours-accompagne).\n",
+    "valeur": "montant",
+    "applicable si": "conditions communes"
+  },
+  "MPR . accompagnée . montant": {
+    "formule": "pourcent écrêté * travaux . plafonnés",
+    "unité": "€"
+  },
+  "MPR . accompagnée . bonus . sauts minimum": 3,
+  "MPR . accompagnée . bonus . condition": "sauts > sauts minimum",
+  "MPR . accompagnée . bonus": {
+    "titre": "Bonus sortie de passoire",
+    "description": "Une aide majorée est mise en place pour les passoires énergétiques. Cette bonification se s’applique que si l’étiquette D est atteinte à minima.\n",
+    "applicable si": "condition",
+    "valeur": "10 %"
+  },
+  "MPR . accompagnée . écrêté": "pourcent dont bonus > écrêtement",
+  "MPR . accompagnée . pourcent écrêté": {
+    "valeur": "pourcent dont bonus",
+    "plafond": "écrêtement"
+  },
+  "MPR . accompagnée . pourcent dont bonus": "pourcent brut + bonus",
+  "MPR . accompagnée . sauts minimum": 2,
+  "MPR . accompagnée . pourcent brut": {
+    "formule": {
+      "variations": [
+        { "si": "sauts < sauts minimum", "alors": 0 },
+        { "si": "revenu . classe = 'très modeste'", "alors": "60 % + 20 %" },
+        { "si": "revenu . classe = 'modeste'", "alors": "40 % + 20 %" },
+        {
+          "si": "revenu . classe = 'intermédiaire'",
+          "alors": {
+            "variations": [
+              { "si": "sauts < 3", "alors": "30 % + 15 %" },
+              { "sinon": "30 % + 20 %" }
+            ]
+          }
+        },
+        {
+          "sinon": {
+            "variations": [
+              { "si": "sauts < 3", "alors": "15 % + 15 %" },
+              { "sinon": "15 % + 20 %" }
+            ]
+          }
+        }
+      ]
+    },
+    "description": "Dans cette formule, on somme deux pourcentages : l'un correspond au budget de l'État, l'autre aux CEE. \n\nEn 2024, c'est l'ANAH qui gère directement les CEE, en toute transparence pour le citoyen.\n"
+  },
+  "MPR . accompagnée . écrêtement": {
+    "titre": "Taux maximum toutes aides",
+    "description": "Le taux maximum toutes aides confondu ne peut pas dépasser un certain pourcentage de l'enveloppe de travaux, et ce pourcentage dépend de votre classe de revenu.\n",
+    "variations": [
+      { "si": "revenu . classe = 'très modeste'", "alors": "100 %" },
+      { "si": "revenu . classe = 'modeste'", "alors": "80 %" },
+      { "si": "revenu . classe = 'intermédiaire'", "alors": "60 %" },
+      { "sinon": "40 %" }
+    ]
+  },
+  "revenu . max": "94844 €",
+  "revenu . barème IdF": {
+    "description": "Source Web : https://france-renov.gouv.fr/bareme#fr_idf-threshold\nSource PDF : https://www.anah.gouv.fr/sites/default/files/2023-12/202401_guide-aides-financieres-2024.pdf#page=5\n",
+    "formule": {
+      "variations": [
+        { "si": "revenu >= 90496", "alors": "\"supérieure\"" },
+        {
+          "si": "personnes = 1",
+          "alors": {
+            "variations": [
+              { "si": "revenu < 23541 €", "alors": "\"très modeste\"" },
+              { "si": "revenu < 28657 €", "alors": "\"modeste\"" },
+              { "si": "revenu < 40018 €", "alors": "\"intermédiaire\"" },
+              { "sinon": "\"supérieure\"" }
+            ]
+          }
+        },
+        {
+          "si": "personnes = 2",
+          "alors": {
+            "variations": [
+              { "si": "revenu < 34551 €", "alors": "\"très modeste\"" },
+              { "si": "revenu < 42058 €", "alors": "\"modeste\"" },
+              { "si": "revenu < 58827 €", "alors": "\"intermédiaire\"" },
+              { "sinon": "\"supérieure\"" }
+            ]
+          }
+        },
+        {
+          "si": "personnes = 3",
+          "alors": {
+            "variations": [
+              { "si": "revenu < 41493 €", "alors": "\"très modeste\"" },
+              { "si": "revenu < 50513 €", "alors": "\"modeste\"" },
+              { "si": "revenu < 70382 €", "alors": "\"intermédiaire\"" },
+              { "sinon": "\"supérieure\"" }
+            ]
+          }
+        },
+        {
+          "si": "personnes = 4",
+          "alors": {
+            "variations": [
+              { "si": "revenu < 48447 €", "alors": "\"très modeste\"" },
+              { "si": "revenu < 58981 €", "alors": "\"modeste\"" },
+              { "si": "revenu < 82839 €", "alors": "\"intermédiaire\"" },
+              { "sinon": "\"supérieure\"" }
+            ]
+          }
+        },
+        {
+          "si": "personnes = 5",
+          "alors": {
+            "variations": [
+              { "si": "revenu < 55427 €", "alors": "\"très modeste\"" },
+              { "si": "revenu < 67473 €", "alors": "\"modeste\"" },
+              { "si": "revenu < max", "alors": "\"intermédiaire\"" },
+              { "sinon": "\"supérieure\"" }
+            ]
+          }
+        },
+        {
+          "sinon": {
+            "variations": [
+              {
+                "si": "revenu < (55427 + personnes plus * 6970 €)",
+                "alors": "\"très modeste\""
+              },
+              {
+                "si": "revenu < (67473 + personnes plus * 8486 €)",
+                "alors": "\"modeste\""
+              },
+              {
+                "si": "revenu < (max + personnes plus * 12006 €)",
+                "alors": "\"intermédiaire\""
+              },
+              { "sinon": "\"supérieure\"" }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "revenu . barème . max": "72400 €",
+  "revenu . barème": {
+    "description": "Source Web : https://france-renov.gouv.fr/bareme\nSource PDF : https://www.anah.gouv.fr/sites/default/files/2023-12/202401_guide-aides-financieres-2024.pdf#page=5\n",
+    "formule": {
+      "variations": [
+        { "si": "revenu >= max", "alors": "\"supérieure\"" },
+        {
+          "si": "personnes = 1",
+          "alors": {
+            "variations": [
+              { "si": "revenu < 17009 €", "alors": "\"très modeste\"" },
+              { "si": "revenu < 21805 €", "alors": "\"modeste\"" },
+              { "si": "revenu < 30549 €", "alors": "\"intermédiaire\"" },
+              { "sinon": "\"supérieure\"" }
+            ]
+          }
+        },
+        {
+          "si": "personnes = 2",
+          "alors": {
+            "variations": [
+              { "si": "revenu < 24875 €", "alors": "\"très modeste\"" },
+              { "si": "revenu < 31889 €", "alors": "\"modeste\"" },
+              { "si": "revenu < 44907 €", "alors": "\"intermédiaire\"" },
+              { "sinon": "\"supérieure\"" }
+            ]
+          }
+        },
+        {
+          "si": "personnes = 3",
+          "alors": {
+            "variations": [
+              { "si": "revenu < 29917 €", "alors": "\"très modeste\"" },
+              { "si": "revenu < 38349 €", "alors": "\"modeste\"" },
+              { "si": "revenu < 54071 €", "alors": "\"intermédiaire\"" },
+              { "sinon": "\"supérieure\"" }
+            ]
+          }
+        },
+        {
+          "si": "personnes = 4",
+          "alors": {
+            "variations": [
+              { "si": "revenu < 34948 €", "alors": "\"très modeste\"" },
+              { "si": "revenu < 44802 €", "alors": "\"modeste\"" },
+              { "si": "revenu < 63235 €", "alors": "\"intermédiaire\"" },
+              { "sinon": "\"supérieure\"" }
+            ]
+          }
+        },
+        {
+          "si": "personnes = 5",
+          "alors": {
+            "variations": [
+              { "si": "revenu < 40002 €", "alors": "\"très modeste\"" },
+              { "si": "revenu < 51281 €", "alors": "\"modeste\"" },
+              { "si": "revenu < max", "alors": "\"intermédiaire\"" },
+              { "sinon": "\"supérieure\"" }
+            ]
+          }
+        },
+        {
+          "sinon": {
+            "variations": [
+              {
+                "si": "revenu < (40002 + personnes plus * 5045 €)",
+                "alors": "\"très modeste\""
+              },
+              {
+                "si": "revenu < (51281 + personnes plus * 6462 €)",
+                "alors": "\"modeste\""
+              },
+              {
+                "si": "revenu < (max + personnes plus * 9165 €)",
+                "alors": "\"intermédiaire\""
+              },
+              { "sinon": "\"supérieure\"" }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "gestes . montant": {
+    "applicable si": "explication des 2 aides",
+    "question": { "mosaïque": "Quels gestes envisagez-vous ?" },
+    "somme": ["chauffage", "isolation", "autres"]
+  },
+  "gestes . autres": {
+    "titre": "Divers",
+    "somme": ["audit", "dépose fioul", "ventilation double flux"]
+  },
+  "gestes . autres . audit": {
+    "par défaut": "oui",
+    "titre": "Audit énergétique",
+    "description": "Cet audit est conditionné à la réalisation d'un geste de travaux.\n\nÀ noter, pour les appartements en copro de 50 lots ou plus et équipés d'un chauffage ou refroidissement collectif, construits avant 2001, l'audit est obligatoire et ne sera pas financé par Ma Prime Rénov'. Voir [cet article de loi](https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022493232/2019-11-10).\n"
+  },
+  "gestes . autres . audit . plafond": { "valeur": "800 €" },
+  "gestes . autres . audit . montant": {
+    "variations": [
+      { "si": "revenu . classe = 'très modeste'", "alors": "500 €" },
+      { "si": "revenu . classe = 'modestes'", "alors": "400 €" },
+      { "si": "revenu . classe = 'intermédiaire'", "alors": "300 €" },
+      { "sinon": "0 €" }
+    ]
+  },
+  "gestes . autres . dépose fioul": {
+    "par défaut": "oui",
+    "titre": "Dépose de cuve à fioul"
+  },
+  "gestes . autres . dépose fioul . plafond": { "valeur": "4000 €" },
+  "gestes . autres . dépose fioul . montant": {
+    "variations": [
+      { "si": "revenu . classe = 'très modeste'", "alors": "1200 €" },
+      { "si": "revenu . classe = 'modestes'", "alors": "800 €" },
+      { "si": "revenu . classe = 'intermédiaire'", "alors": "400 €" },
+      { "sinon": "0 €" }
+    ]
+  },
+  "gestes . autres . ventilation double flux": { "par défaut": "oui" },
+  "gestes . autres . ventilation double flux . plafond": { "valeur": "4000 €" },
+  "gestes . autres . ventilation double flux . montant": {
+    "variations": [
+      { "si": "revenu . classe = 'très modeste'", "alors": "2500 €" },
+      { "si": "revenu . classe = 'modestes'", "alors": "2000 €" },
+      { "si": "revenu . classe = 'intermédiaire'", "alors": "1500 €" },
+      { "sinon": "0 €" }
+    ]
+  },
+  "gestes . chauffage": {
+    "titre": "Chauffage et eau chaude",
+    "description": "Chauffage et eau chaude sanitaire",
+    "somme": [
+      "raccordement réseau . montant",
+      "chauffe-eau thermodynamique . montant",
+      "PAC . air-eau . montant",
+      "PAC . géo ou solaire . montant",
+      "chauffe-eau solaire . montant",
+      "solaire combiné . montant",
+      "partie thermique PVT eau . montant",
+      "poêle . à bûches . montant",
+      "poêle . à granulés . montant",
+      "chaudière bois . manuelle . montant",
+      "chaudière bois . automatique . montant",
+      "foyer et insert . montant"
+    ]
+  },
+  "gestes . chauffage . raccordement réseau": {
+    "par défaut": "oui",
+    "titre": "Raccordement à un réseau de chaleur et/ou de froid"
+  },
+  "gestes . chauffage . raccordement réseau . plafond": { "valeur": "1800 €" },
+  "gestes . chauffage . raccordement réseau . montant": {
+    "variations": [
+      { "si": "revenu . classe = 'très modeste'", "alors": "1200 €" },
+      { "si": "revenu . classe = 'modestes'", "alors": "800 €" },
+      { "si": "revenu . classe = 'intermédiaire'", "alors": "400 €" },
+      { "sinon": "0 €" }
+    ]
+  },
+  "gestes . chauffage . chauffe-eau thermodynamique": { "par défaut": "oui" },
+  "gestes . chauffage . chauffe-eau thermodynamique . plafond": {
+    "valeur": "3500 €"
+  },
+  "gestes . chauffage . chauffe-eau thermodynamique . montant": {
+    "variations": [
+      { "si": "revenu . classe = 'très modeste'", "alors": "1200 €" },
+      { "si": "revenu . classe = 'modestes'", "alors": "800 €" },
+      { "si": "revenu . classe = 'intermédiaire'", "alors": "400 €" },
+      { "sinon": "0 €" }
+    ]
+  },
+  "gestes . chauffage . PAC": { "titre": "Pompe à chaleur" },
+  "gestes . chauffage . PAC . air-eau": {
+    "par défaut": "oui",
+    "titre": "Pompe à chaleur air/eau",
+    "description": "Pompe à chaleur air/eau (dont PAC hybrides)"
+  },
+  "gestes . chauffage . PAC . air-eau . plafond": "12000 €",
+  "gestes . chauffage . PAC . air-eau . montant": {
+    "variations": [
+      { "si": "revenu . classe = 'très modeste'", "alors": "5000 €" },
+      { "si": "revenu . classe = 'modestes'", "alors": "4000 €" },
+      { "si": "revenu . classe = 'intermédiaire'", "alors": "3000 €" },
+      { "sinon": "0 €" }
+    ]
+  },
+  "gestes . chauffage . PAC . géo ou solaire": {
+    "par défaut": "oui",
+    "titre": "Pompe à chaleur géo/solarothermique",
+    "description": "Pompe à chaleur géothermique ou solarothermique (dont PAC hybrides)"
+  },
+  "gestes . chauffage . PAC . géo ou solaire . plafond": "18000 €",
+  "gestes . chauffage . PAC . géo ou solaire . montant": {
+    "variations": [
+      { "si": "revenu . classe = 'très modeste'", "alors": "11000 €" },
+      { "si": "revenu . classe = 'modestes'", "alors": "9000 €" },
+      { "si": "revenu . classe = 'intermédiaire'", "alors": "6000 €" },
+      { "sinon": "0 €" }
+    ]
+  },
+  "gestes . chauffage . chauffe-eau solaire": {
+    "par défaut": "oui",
+    "titre": "Chauffe-eau solaire individuel en Métropole",
+    "desription": "Et dispositifs solaires pour le chauffage de l’eau.\n"
+  },
+  "gestes . chauffage . chauffe-eau solaire . plafond": "7000 €",
+  "gestes . chauffage . chauffe-eau solaire . montant": {
+    "variations": [
+      { "si": "revenu . classe = 'très modeste'", "alors": "4000 €" },
+      { "si": "revenu . classe = 'modestes'", "alors": "3000 €" },
+      { "si": "revenu . classe = 'intermédiaire'", "alors": "2000 €" },
+      { "sinon": "0 €" }
+    ]
+  },
+  "gestes . chauffage . solaire combiné": {
+    "par défaut": "oui",
+    "titre": "Système solaire combiné",
+    "desription": "Et dispositifs solaires pour le chauffage des locaux.\n"
+  },
+  "gestes . chauffage . solaire combiné . plafond": "16000 €",
+  "gestes . chauffage . solaire combiné . montant": {
+    "variations": [
+      { "si": "revenu . classe = 'très modeste'", "alors": "10000 €" },
+      { "si": "revenu . classe = 'modestes'", "alors": "8000 €" },
+      { "si": "revenu . classe = 'intermédiaire'", "alors": "4000 €" },
+      { "sinon": "0 €" }
+    ]
+  },
+  "gestes . chauffage . partie thermique PVT eau": {
+    "titre": "Partie thermique d’un équipement PVT eau",
+    "par défaut": "oui",
+    "desription": "Et dispositifs solaires pour le chauffage des locaux.\n"
+  },
+  "gestes . chauffage . partie thermique PVT eau . plafond": "4000 €",
+  "gestes . chauffage . partie thermique PVT eau . montant": {
+    "variations": [
+      { "si": "revenu . classe = 'très modeste'", "alors": "10000 €" },
+      { "si": "revenu . classe = 'modestes'", "alors": "8000 €" },
+      { "si": "revenu . classe = 'intermédiaire'", "alors": "4000 €" },
+      { "sinon": "0 €" }
+    ]
+  },
+  "gestes . chauffage . chaudière bois": { "titre": "Chaudière bois" },
+  "gestes . chauffage . chaudière bois . manuelle": {
+    "titre": "Chaudière bois manuelle (bûches)",
+    "description": "Chaudière bois à alimentation manuelle (bûches)",
+    "par défaut": "oui"
+  },
+  "gestes . chauffage . chaudière bois . manuelle . plafond": "16000 €",
+  "gestes . chauffage . chaudière bois . manuelle . montant": {
+    "variations": [
+      { "si": "revenu . classe = 'très modeste'", "alors": "8000 €" },
+      { "si": "revenu . classe = 'modestes'", "alors": "6500 €" },
+      { "si": "revenu . classe = 'intermédiaire'", "alors": "3000 €" },
+      { "sinon": "0 €" }
+    ]
+  },
+  "gestes . chauffage . chaudière bois . automatique": {
+    "titre": "Chaudière bois auto (granulés, plaquettes)",
+    "description": "Chaudière bois à alimentation automatique (granulés, plaquettes)",
+    "par défaut": "oui"
+  },
+  "gestes . chauffage . chaudière bois . automatique . plafond": "18000 €",
+  "gestes . chauffage . chaudière bois . automatique . montant": {
+    "variations": [
+      { "si": "revenu . classe = 'très modeste'", "alors": "10000 €" },
+      { "si": "revenu . classe = 'modestes'", "alors": "8000 €" },
+      { "si": "revenu . classe = 'intermédiaire'", "alors": "4000 €" },
+      { "sinon": "0 €" }
+    ]
+  },
+  "gestes . chauffage . foyer et insert": {
+    "par défaut": "oui",
+    "titre": "Foyer fermé et insert à buches ou à granulés"
+  },
+  "gestes . chauffage . foyer et insert . plafond": "4000 €",
+  "gestes . chauffage . foyer et insert . montant": {
+    "variations": [
+      { "si": "revenu . classe = 'très modeste'", "alors": "2500 €" },
+      { "si": "revenu . classe = 'modestes'", "alors": "1500 €" },
+      { "si": "revenu . classe = 'intermédiaire'", "alors": "800 €" },
+      { "sinon": "0 €" }
+    ]
+  },
+  "gestes . chauffage . poêle": { "titre": "Poêle et cuisinière" },
+  "gestes . chauffage . poêle . à bûches": {
+    "par défaut": "oui",
+    "titre": "Poêle et cuisinière à bûches"
+  },
+  "gestes . chauffage . poêle . à bûches . plafond": "4000 €",
+  "gestes . chauffage . poêle . à bûches . montant": {
+    "variations": [
+      { "si": "revenu . classe = 'très modeste'", "alors": "2500 €" },
+      { "si": "revenu . classe = 'modestes'", "alors": "2000 €" },
+      { "si": "revenu . classe = 'intermédiaire'", "alors": "1000 €" },
+      { "sinon": "0 €" }
+    ]
+  },
+  "gestes . chauffage . poêle . à granulés": {
+    "par défaut": "oui",
+    "titre": "Poêle et cuisinière à granulés"
+  },
+  "gestes . chauffage . poêle . à granulés . plafond": "5000 €",
+  "gestes . chauffage . poêle . à granulés . montant": {
+    "variations": [
+      { "si": "revenu . classe = 'très modeste'", "alors": "2500 €" },
+      { "si": "revenu . classe = 'modestes'", "alors": "2000 €" },
+      { "si": "revenu . classe = 'intermédiaire'", "alors": "1500 €" },
+      { "sinon": "0 €" }
+    ]
+  },
+  "gestes . isolation": {
+    "titre": "Isolation thermique",
+    "somme": [
+      "vitres . montant",
+      "murs extérieurs . montant",
+      "murs intérieurs . montant",
+      "rampants . montant",
+      "toitures terrasses"
+    ]
+  },
+  "gestes . isolation . vitres": {
+    "titre": "Remplacement de simple vitrage",
+    "description": "Isolation thermique des parois vitrées (fenêtres et portes-fenêtres) en remplacement de simple vitrage",
+    "par défaut": "oui"
+  },
+  "gestes . isolation . vitres . montant": "barème * nombre",
+  "gestes . isolation . vitres . nombre": {
+    "question": "Combien de parois vitrées voulez-vous isoler ?",
+    "par défaut": "4 équipement"
+  },
+  "gestes . isolation . vitres . plafond": "1000 €/m2",
+  "gestes . isolation . vitres . barème": {
+    "variations": [
+      { "si": "revenu . classe = 'très modeste'", "alors": "100 €/équipement" },
+      { "si": "revenu . classe = 'modeste'", "alors": "80 €/équipement" },
+      { "si": "revenu . classe = 'intermédiaire'", "alors": "40 €/équipement" },
+      { "sinon": "0 €" }
+    ]
+  },
+  "gestes . isolation . murs extérieurs": {
+    "titre": "Isolation des murs par l'extérieur",
+    "par défaut": "oui"
+  },
+  "gestes . isolation . murs extérieurs . surface": {
+    "question": "Quelle surface de murs extérieurs voulez-vous isoler ?",
+    "par défaut": "100 m2"
+  },
+  "gestes . isolation . murs extérieurs . montant": "surface * barème",
+  "gestes . isolation . murs extérieurs . plafond": "150 €/m2",
+  "gestes . isolation . murs extérieurs . barème": {
+    "variations": [
+      { "si": "revenu . classe = 'très modeste'", "alors": "75 €/m2" },
+      { "si": "revenu . classe = 'modeste'", "alors": "60 €/m2" },
+      { "si": "revenu . classe = 'intermédiaire'", "alors": "40 €/m2" },
+      { "sinon": "0 €" }
+    ]
+  },
+  "gestes . isolation . murs intérieurs": {
+    "titre": "Isolation des murs par l'intérieur",
+    "par défaut": "oui"
+  },
+  "gestes . isolation . murs intérieurs . surface": {
+    "question": "Quelle surface de murs intérieurs voulez-vous isoler ?",
+    "par défaut": "100 m2"
+  },
+  "gestes . isolation . murs intérieurs . montant": "surface * barème",
+  "gestes . isolation . murs intérieurs . plafond": "70 €/m2",
+  "gestes . isolation . murs intérieurs . barème": {
+    "variations": [
+      { "si": "revenu . classe = 'très modeste'", "alors": "25 €/m2" },
+      { "si": "revenu . classe = 'modeste'", "alors": "20 €/m2" },
+      { "si": "revenu . classe = 'intermédiaire'", "alors": "15 €/m2" },
+      { "sinon": "0 €" }
+    ]
+  },
+  "gestes . isolation . rampants": {
+    "titre": "Isolation des rampants de toiture ou plafonds de combles",
+    "par défaut": "oui"
+  },
+  "gestes . isolation . rampants . surface": {
+    "question": "Quelle surface de rampants voulez-vous isoler ?",
+    "par défaut": "60 m2"
+  },
+  "gestes . isolation . rampants . montant": "surface * barème",
+  "gestes . isolation . rampants . plafond": "75 €/m2",
+  "gestes . isolation . rampants . barème": {
+    "variations": [
+      { "si": "revenu . classe = 'très modeste'", "alors": "25 €/m2" },
+      { "si": "revenu . classe = 'modeste'", "alors": "20 €/m2" },
+      { "si": "revenu . classe = 'intermédiaire'", "alors": "15 €/m2" },
+      { "sinon": "0 €" }
+    ]
+  },
+  "gestes . isolation . toitures terrasses": {
+    "titre": "Isolation thermique des toitures terrasses",
+    "par défaut": "oui"
+  },
+  "gestes . isolation . toitures terrasses . surface": {
+    "question": "Quelle surface de toiture terrasses voulez-vous isoler ?",
+    "par défaut": "60 m2"
+  },
+  "gestes . isolation . toitures terrasses . montant": "surface * barème",
+  "gestes . isolation . toitures terrasses . plafond": "180 €/m2",
+  "gestes . isolation . toitures terrasses . barème": {
+    "variations": [
+      { "si": "revenu . classe = 'très modeste'", "alors": "75 €/m2" },
+      { "si": "revenu . classe = 'modeste'", "alors": "60 €/m2" },
+      { "si": "revenu . classe = 'intermédiaire'", "alors": "40 €/m2" },
+      { "sinon": "0 €" }
+    ]
+  }
+}
