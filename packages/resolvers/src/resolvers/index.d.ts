@@ -4,6 +4,7 @@ const resolverParams = z.object({
   question: z.string().describe("Question pour l'utilisateur"),
   schema: z.instanceof(ZodSchema),
   model: z.string().optional(),
+  additionalPrompt: z.string.optional(),
   questionCallback: z
     .function()
     .args(z.string())

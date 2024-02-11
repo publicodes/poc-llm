@@ -18,12 +18,23 @@ type CdtnRuleNode = RawRule & {
   [x: string]: unknown;
 };
 
-const getRuleSchema = (rule: CdtnRuleNode): ZodSchema => {
+const makeChoiceDescription = (choices) =>
+  `\n\nchoisir parmi:\n${Object.entries(choices)
+    .sort()
+    .map(
+      ([k, v]) =>
+        ` - "${cleanPublicodeStr(k)}" (valeur ${cleanPublicodeStr(v)})`
+    )
+    .join("\n")}`;
+
+const cleanPublicodeStr = (str: any) =>
+  (isStr(str) && str.replace(/^'(.*)'$/, "$1")) || str;
+
+export const getRuleSchema = (rule: CdtnRuleNode): ZodSchema => {
   const nodeType = rule.cdtn?.type || rule.meta?.type;
   const describe = `${rule.titre || rule.question}${
     rule.unité ? ` (en ${rule.unité})` : ``
   }`;
-  console.log("nodeType", nodeType, describe);
   let fieldSchema: ZodSchema = z.string().describe(describe);
   if (nodeType === "oui-non") {
     fieldSchema = z.enum(["oui", "non"]).describe(describe);
@@ -32,67 +43,43 @@ const getRuleSchema = (rule: CdtnRuleNode): ZodSchema => {
   } else if (nodeType === "liste") {
     // todo: use some convention instead of "cdtn"
     const root = (rule.cdtn && rule.cdtn.valeurs) || rule.meta?.valeurs;
-    console.log("root", root);
     if (root && Object.values(root || []).length) {
-      const values: { value: string; label: string }[] = Object.entries(
-        root || []
-      )
-        .map(([k, v]) => {
-          console.log("k,x", k, v.toString().replace(/'/g, ""));
-          return {
-            value: (v.toString().replace(/'/g, "") !== k.toString()
-              ? `${v}`
-              : `${k}`
-            )
-              .replace(/^'/, "")
-              .replace(/'$/, ""),
-            label: k,
-          };
-        })
-        .filter(Boolean);
-      if (values.length > 0) {
+      const schemas = Object.entries(root)
+        .sort()
+        .map(([key, label]) =>
+          z.literal(cleanPublicodeStr(label)).describe(key)
+        );
+
+      if (schemas.length) {
         fieldSchema = z
-          //@ts-ignore
-          .enum(values.map((v) => v.value))
-          .describe(
-            describe +
-              ` choisir parmi: ${values
-                .map((v) => `${v.label}: ${v.value}`)
-                .join(", ")}`
-          );
+          .union(schemas)
+          .describe(describe + makeChoiceDescription(root));
       }
     }
   } else if (rule.suggestions && Object.values(rule.suggestions).length) {
-    const values = Object.values(rule.suggestions).map(
-      (s) => s && ("" + s).replace(/'/g, "")
-    );
-    fieldSchema = z
-      //@ts-ignore
-      .enum(values)
-      .describe(
-        describe +
-          ` choisir parmi: ${values
-            .map(
-              (v) =>
-                `${("" + v).replace(/'/g, "")}: ${
-                  rule.suggestions[v] &&
-                  ("" + rule.suggestions[v]).replace(/'/g, "")
-                }`
-            )
-            .join(", ")}`
-      );
+    const schemas = Object.entries(rule.suggestions)
+      .sort()
+      .map(([key, label]) => z.literal(cleanPublicodeStr(label)).describe(key));
+
+    if (schemas.length) {
+      fieldSchema = z
+        .union(schemas)
+        .describe(describe + makeChoiceDescription(rule.suggestions));
+    }
   } else if (rule.aide && Object.values(rule.aide).length > 0) {
-    fieldSchema = z
-      //@ts-ignore
-      .enum(Object.values(rule.aide))
-      .describe(
-        describe +
-          ` choisir parmi: ${Object.entries(rule.aide)
-            .map(([k, v]) => `${k} (${v})`)
-            .join(", ")}`
-      );
+    const schemas = Object.entries(rule.aide)
+      .sort()
+      .map(([key, aide]) => z.literal(cleanPublicodeStr(aide)).describe(key));
+
+    if (schemas.length) {
+      fieldSchema = z
+        .union(schemas)
+        .describe(describe + makeChoiceDescription(rule.aide));
+    }
   } else if (rule["par défaut"] === "oui" || rule["par défaut"] === "non") {
     fieldSchema = z.enum(["oui", "non"]).describe(describe);
+  } else if (isStr(rule["par défaut"]) && rule["par défaut"].match(/^\d+\s/)) {
+    fieldSchema = z.number().int().describe(describe);
   }
   console.log(rule, fieldSchema);
   return fieldSchema;
@@ -193,9 +180,11 @@ export const resolvePublicodes = async ({
         } else {
           const schema = getRuleSchema(missingRule);
           // eslint-disable-next-line no-await-in-loop
+          const additionalPrompt = "";
           const missingResolved = await resolveLLM({
             question: missingQuestion,
             schema,
+            additionalPrompt,
             questionCallback,
             commentCallback,
           });
@@ -214,6 +203,7 @@ export const resolvePublicodes = async ({
       resolved = result;
     }
   }
+  log("publicodes resolved", { situation, resolved });
   return { situation, resolved };
 };
 

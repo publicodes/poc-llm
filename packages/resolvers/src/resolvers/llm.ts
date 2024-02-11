@@ -17,23 +17,30 @@ const defaultCommentCallback = (text: string) => {
   return console.log(`comment : ${text}`);
 };
 
-const getInstructions = ({ schema }: { schema: ZodSchema }) =>
-  `
+const getInstructions = ({
+  schema,
+  additionalPrompt,
+}: {
+  schema: ZodSchema;
+  additionalPrompt?: string;
+}) => {
+  const jsonSchema = zodToJsonSchema(schema, "schema");
+  return `
 Tu es un assistant qui va aider l'utilisateur à répondre à une question.
-Poses directement la question fournie initialement.
+Poses directement la question fournie initialement. Si plusieurs choix sont possibles dans le JSON-schema, indiques les à l'utilisateur dans ta question.
 Utilises un language direct et vouvoies l'utilisateur.
-Indique les choix possibles quand ils sont fournis dans le json-schema SCHEMA.
 Tu ne dois jamais répondre à la place de l'utilisateur.
 Ne fait appel à du cache ou à des informations générales.
-
-Dès que l'utilisateur t'as donné la réponse, tu dois la renvoyer respectant le modèle XML suivant :
+${(additionalPrompt && `\n${additionalPrompt}\n`) || ""}
+Dès que tu as une réponse valide de l'utilisateur, tu dois la renvoyer respectant le modèle XML ci-dessous..
 
 <EXPLICATIONS>[explications et détails de calcul]</EXPLICATIONS>
-<REPONSE>[reponse respectant le schema TypeScript ci-dessous]</REPONSE>
+<REPONSE>[reponse respectant le schema json-schema ci-dessous]</REPONSE>
 
-SCHEMA: ${JSON.stringify(zodToJsonSchema(schema, "schema").definitions.schema)}
+${jsonSchema && `SCHEMA: ${JSON.stringify(jsonSchema.definitions?.schema)}`}
 
 `.trim();
+};
 
 /**
  *
@@ -43,6 +50,7 @@ SCHEMA: ${JSON.stringify(zodToJsonSchema(schema, "schema").definitions.schema)}
 export const resolveLLM = async ({
   question,
   schema,
+  additionalPrompt,
   model = "gpt-3.5-turbo",
   questionCallback = defaultQuestionCallback,
   commentCallback = defaultCommentCallback,
@@ -58,12 +66,15 @@ export const resolveLLM = async ({
   const resultSchema = z.object({
     result: schema,
   });
-  const instructions = getInstructions({ schema: resultSchema });
+  const instructions = getInstructions({
+    schema: resultSchema,
+    additionalPrompt,
+  });
   const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
     { role: "system", content: instructions },
     {
       role: "user",
-      content: `Aidez-moi à répondre à la question "${question}" en commencant par me poser directement cette question.\n\nExplique toujours les choix possibles quand ils sont définis et ne répond jamais à la place de l'utilisateur.`,
+      content: `Aidez-moi à répondre à la question "${question}".`,
     },
   ];
   //
