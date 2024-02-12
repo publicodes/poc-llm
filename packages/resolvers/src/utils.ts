@@ -12,7 +12,7 @@ export const askUser = async (
   return rl.question("\n\n" + question + "\nUser: ");
 };
 
-export const toPublicodeValue = (str: unknown, rules) => {
+export const toPublicodeValue = (str: unknown, rules): string | number => {
   if (str === true || str === "oui") {
     return "oui";
   }

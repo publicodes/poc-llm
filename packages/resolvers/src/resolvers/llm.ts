@@ -61,6 +61,7 @@ export const resolveLLM = async ({
     apiKey: process.env.OPENAI_API_KEY || document.location.hash.slice(1),
     dangerouslyAllowBrowser: true,
   });
+  let counter = 0;
   let userAnswer: string;
   let result: ResolverResult<typeof schema> = {};
   const resultSchema = z.object({
@@ -115,7 +116,8 @@ export const resolveLLM = async ({
   });
 
   //
-  while (!result.answer) {
+  while (!result.answer && counter < 10) {
+    counter += 1;
     log(
       "LLMResolver: messages",
       messages.map((m) => `${m.role}: ${m.content}`).join("\n")
@@ -171,10 +173,12 @@ export const resolveLLM = async ({
                 details,
                 answer: validResponse.result,
               };
-              console.log("todo llm#152", response);
+              //console.log("todo llm#152", response);
             }
           } catch {
             // todo: cast based on schema
+            //console.log("catch json test cast", data);
+            //console.log(resultSchema, zodToJsonSchema(resultSchema));
             const validResponse = resultSchema.parse({
               result: data,
             }) as typeof schema;
