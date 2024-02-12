@@ -22,7 +22,9 @@ import kaliData from "./kali-data.json";
 
 const getKaliNameFromIdcc = (idcc: string) => {
   return kaliData.find((convention) => {
-    return convention.idcc === parseInt(idcc);
+    return (
+      convention.idcc === parseInt(idcc) || convention.num === parseInt(idcc)
+    );
   })?.title;
 };
 
