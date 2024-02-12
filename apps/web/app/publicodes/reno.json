@@ -163,6 +163,8 @@
   "travaux": {
     "titre": "Votre enveloppe des travaux",
     "question": "Quel est l'enveloppe totale hors taxe (HT) de vos travaux ?",
+    "meta": { "type": "entier" },
+    "unité": "€",
     "par défaut": {
       "variations": [
         { "si": "simulation . mode = 'moyen'", "alors": "20000 €" },
@@ -215,7 +217,8 @@
   "explication des 2 aides": {
     "description": "Nous avons estimé votre éligibilité générale aux 2 aides Ma Prime Rénov'. \n\nLa suite du test vous permettra de répondre aux conditions plus fines d'éligibilité, et choisir les travaux de rénovation envisagés.\n",
     "type": "question rhétorique",
-    "par défaut": "oui"
+    "par défaut": "oui",
+    "valeur": "non"
   },
   "gestes": null,
   "MPR . accompagnée": {

@@ -151,13 +151,15 @@ export const resolvePublicodes = async ({
   // todo: generic type for the record keys
   const situation: Record<string, PublicodesExpression> = {};
   let resolved;
-  while (!resolved) {
+  let counter = 0;
+  while (!resolved && counter < 50) {
+    counter++;
     const result = engine.setSituation(situation).evaluate(key);
     const { missingKey, missingRule, missingQuestion } = getMissingVariable(
       rules,
       result
     );
-    console.log({ missingKey, missingRule, missingQuestion });
+    console.log({ result, missingKey, missingRule, missingQuestion });
     if (missingKey) {
       if (missingRule && !isStr(missingRule) && missingQuestion) {
         log("publicodes missingKey", missingKey);
@@ -203,7 +205,7 @@ export const resolvePublicodes = async ({
       resolved = result;
     }
   }
-  log("publicodes resolved", { situation, resolved });
+  log("publicodes resolved or timed-out", { situation, resolved });
   return { situation, resolved };
 };
 

@@ -96,10 +96,24 @@ Vous pouvez vous rendre sur [le site du code du travail numérique](https://code
     key: "aides",
     title: "Calcul des aides à la rénovation",
     warning: null,
-    getConclusion: ({ situation, resolved }) => {
-      console.log(resolved.nodeValue);
 
-      return resolved.nodeValue;
+    getConclusion: ({ situation, resolved }) => {
+      if (resolved.nodeValue === 0) {
+        return `Désolé, aucune aide Réno ne semble adaptée à votre situation`;
+      }
+      const parametersList = Object.entries(situation).map(([key, value]) => {
+        const label = rulesReno[key]?.titre || key;
+        return ` - ${label} : ${value}`;
+      });
+      return `
+D'après les paramètres suivants, le montant des aides réno pourrait être de **${formatValue(
+        resolved
+      )}**.
+
+### Paramètres utilisés:
+
+${parametersList.join("\n")}
+`;
     },
   } as PublicodeModelDefinition,
 };

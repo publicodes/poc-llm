@@ -164,10 +164,17 @@ export const resolveLLM = async ({
               };
             } else {
               //todo
-
-              console.log("todo llm#152");
+              const validResponse = resultSchema.parse({
+                result: response,
+              }) as typeof schema;
+              result = {
+                details,
+                answer: validResponse.result,
+              };
+              console.log("todo llm#152", response);
             }
           } catch {
+            // todo: cast based on schema
             const validResponse = resultSchema.parse({
               result: data,
             }) as typeof schema;
