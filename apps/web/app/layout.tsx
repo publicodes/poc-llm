@@ -50,7 +50,7 @@ export default function RootLayout({ children }: { children: JSX.Element }) {
             }
             serviceTitle="Démo publi.codes + LLM"
             homeLinkProps={{
-              href: `/${document.location.hash}`,
+              href: `/${(document && document.location.hash) || ""}`,
               title:
                 "Accueil - Nom de l’entité (ministère, secrétariat d‘état, gouvernement)",
             }}

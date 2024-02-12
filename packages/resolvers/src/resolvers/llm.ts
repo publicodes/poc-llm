@@ -3,6 +3,7 @@
 import { OpenAI } from "openai";
 
 import { printNode, zodToTs } from "zod-to-ts";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import { ZodSchema, z } from "zod";
 
 import { log } from "../utils";
@@ -16,23 +17,30 @@ const defaultCommentCallback = (text: string) => {
   return console.log(`comment : ${text}`);
 };
 
-const getInstructions = ({ schema }: { schema: ZodSchema }) =>
-  `
+const getInstructions = ({
+  schema,
+  additionalPrompt,
+}: {
+  schema: ZodSchema;
+  additionalPrompt?: string;
+}) => {
+  const jsonSchema = zodToJsonSchema(schema, "schema");
+  return `
 Tu es un assistant qui va aider l'utilisateur à répondre à une question.
-Poses directement la question fournie initialement.
+Poses directement la question fournie initialement. Si plusieurs choix sont possibles dans le JSON-schema, indiques les à l'utilisateur dans ta question.
 Utilises un language direct et vouvoies l'utilisateur.
-Indique les choix possibles quand ils sont fournis dans le schema TypeScript.
 Tu ne dois jamais répondre à la place de l'utilisateur.
 Ne fait appel à du cache ou à des informations générales.
-
-Dès que l'utilisateur t'as donné la réponse, tu dois la renvoyer respectant le modèle XML suivant :
+${(additionalPrompt && `\n${additionalPrompt}\n`) || ""}
+Dès que tu as une réponse valide de l'utilisateur, tu dois la renvoyer respectant le modèle XML ci-dessous..
 
 <EXPLICATIONS>[explications et détails de calcul]</EXPLICATIONS>
-<REPONSE>[reponse respectant le schema TypeScript ci-dessous]</REPONSE>
+<REPONSE>[reponse respectant le schema json-schema ci-dessous]</REPONSE>
 
-SCHEMA: ${printNode(zodToTs(schema).node)}
+${jsonSchema && `SCHEMA: ${JSON.stringify(jsonSchema.definitions?.schema)}`}
 
 `.trim();
+};
 
 /**
  *
@@ -42,6 +50,7 @@ SCHEMA: ${printNode(zodToTs(schema).node)}
 export const resolveLLM = async ({
   question,
   schema,
+  additionalPrompt,
   model = "gpt-3.5-turbo",
   questionCallback = defaultQuestionCallback,
   commentCallback = defaultCommentCallback,
@@ -52,17 +61,21 @@ export const resolveLLM = async ({
     apiKey: process.env.OPENAI_API_KEY || document.location.hash.slice(1),
     dangerouslyAllowBrowser: true,
   });
+  let counter = 0;
   let userAnswer: string;
   let result: ResolverResult<typeof schema> = {};
   const resultSchema = z.object({
     result: schema,
   });
-  const instructions = getInstructions({ schema: resultSchema });
+  const instructions = getInstructions({
+    schema: resultSchema,
+    additionalPrompt,
+  });
   const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
     { role: "system", content: instructions },
     {
       role: "user",
-      content: `Aidez-moi à répondre à la question "${question}" en commencant par me poser directement cette question.\n\nExplique toujours les choix possibles quand ils sont définis et ne répond jamais à la place de l'utilisateur.`,
+      content: `Aidez-moi à répondre à la question "${question}".`,
     },
   ];
   //
@@ -103,7 +116,8 @@ export const resolveLLM = async ({
   });
 
   //
-  while (!result.answer) {
+  while (!result.answer && counter < 10) {
+    counter += 1;
     log(
       "LLMResolver: messages",
       messages.map((m) => `${m.role}: ${m.content}`).join("\n")
@@ -139,20 +153,39 @@ export const resolveLLM = async ({
             responseContent.indexOf("<REPONSE>") + 9,
             responseContent.indexOf("</REPONSE>")
           );
-          const response = JSON.parse(data);
-          if (typeof response.result !== "undefined") {
-            const validResponse = resultSchema.parse({
-              result: response.result,
-            }) as typeof schema;
+          try {
+            const response = JSON.parse(data);
+            if (typeof response.result !== "undefined") {
+              const validResponse = resultSchema.parse({
+                result: response.result,
+              }) as typeof schema;
 
+              result = {
+                details,
+                answer: validResponse.result,
+              };
+            } else {
+              //todo
+              const validResponse = resultSchema.parse({
+                result: response,
+              }) as typeof schema;
+              result = {
+                details,
+                answer: validResponse.result,
+              };
+              //console.log("todo llm#152", response);
+            }
+          } catch {
+            // todo: cast based on schema
+            //console.log("catch json test cast", data);
+            //console.log(resultSchema, zodToJsonSchema(resultSchema));
+            const validResponse = resultSchema.parse({
+              result: data,
+            }) as typeof schema;
             result = {
               details,
               answer: validResponse.result,
             };
-          } else {
-            //todo
-
-            console.log("todo llm#152");
           }
         } catch (e) {
           console.log(e);

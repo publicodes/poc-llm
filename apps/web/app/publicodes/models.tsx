@@ -5,6 +5,7 @@ import rulesPreavisRetraite from "./preavis-retraite.json";
 import rulesImc from "./imc.json";
 import rulesCovid from "./covid.json";
 import rulesOvh from "./ovh.json";
+import rulesReno from "./reno.json";
 
 type PublicodeRules = Record<string, any>;
 
@@ -13,6 +14,8 @@ export type PublicodeModelDefinition = {
   key: string;
   title: string;
   warning: ReactNode;
+  intro?: string;
+  introRules?: string[];
   getConclusion: (arg0: any) => string;
 };
 
@@ -88,6 +91,39 @@ Vous pouvez vous rendre sur [le site du code du travail numérique](https://code
       console.log(resolved.nodeValue);
 
       return resolved.nodeValue;
+    },
+  } as PublicodeModelDefinition,
+  reno: {
+    rules: rulesReno,
+    key: "aides",
+    title: "Calcul des aides à la rénovation",
+    warning: null,
+    intro: `Pour commencer, pouvez-vous m'indiquer le nombre de personnes dans votre foyer, votre revenu fiscal de référence, votre lieu de résidence ? Vous pouvez également m'indiquer votre DPE actuel, ainsi que le montant des travaux et la DPE visé.`,
+    introRules: [
+      "personnes",
+      "revenu",
+      "région",
+      "DPE . actuel",
+      "DPE . visé",
+      "travaux",
+    ],
+    getConclusion: ({ situation, resolved }) => {
+      if (resolved.nodeValue === 0) {
+        return `Désolé, aucune aide Réno ne semble adaptée à votre situation`;
+      }
+      const parametersList = Object.entries(situation).map(([key, value]) => {
+        const label = rulesReno[key]?.titre || key;
+        return ` - ${label} : ${value}`;
+      });
+      return `
+D'après les paramètres suivants, le montant des aides réno pourrait être de **${formatValue(
+        resolved
+      )}**.
+
+### Paramètres utilisés:
+
+${parametersList.join("\n")}
+`;
     },
   } as PublicodeModelDefinition,
 };

@@ -22,14 +22,18 @@ import kaliData from "./kali-data.json";
 
 const getKaliNameFromIdcc = (idcc: string) => {
   return kaliData.find((convention) => {
-    return convention.idcc === parseInt(idcc);
+    return (
+      convention.idcc === parseInt(idcc) || convention.num === parseInt(idcc)
+    );
   })?.title;
 };
 
 const client = new OpenAI({
   timeout: 15000,
   maxRetries: 10,
-  apiKey: process.env.OPENAI_API_KEY || document.location.hash.slice(1),
+  apiKey:
+    process.env.OPENAI_API_KEY ||
+    (typeof document !== "undefined" && document.location.hash.slice(1)),
   dangerouslyAllowBrowser: true,
 });
 
